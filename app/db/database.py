@@ -13,3 +13,4 @@ engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(bind=engine)
 
 import app.models.company
+import app.models.bank_operation
