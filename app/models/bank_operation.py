@@ -1,50 +1,83 @@
-from uuid import uuid4
+import uuid
 from datetime import datetime
-from decimal import Decimal
-
-from sqlalchemy import String, ForeignKey, DateTime, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import (
+    Column,
+    String,
+    DateTime,
+    Date,
+    Numeric,
+    ForeignKey,
+    Text,
+    UniqueConstraint,
+    Index
+)
 from sqlalchemy.dialects.postgresql import UUID
-
 from app.db.database import Base
+from sqlalchemy.orm import relationship
 
 
 class BankOperation(Base):
     __tablename__ = "bank_operations"
 
-    id: Mapped[UUID] = mapped_column(
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    company_id = Column(
         UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4
-    )
-
-    company_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("companies.id"),
+        ForeignKey("companies.id", ondelete="CASCADE"),
         nullable=False
     )
-
-    bank_operation_id: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False
+    company = relationship(
+    "Company",
+    back_populates="bank_operations"
     )
 
-    inn: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False
+    # Документ
+    document_number = Column(String, nullable=False)
+    document_type = Column(String, nullable=False)
+
+    # Деньги
+    amount = Column(Numeric(15, 2), nullable=False)
+    direction = Column(String, nullable=False)  # incoming / outgoing
+
+    # Даты
+    operation_date = Column(DateTime, nullable=False)
+    document_date = Column(Date, nullable=True)
+
+    # Счета
+    account_number = Column(String, nullable=False)
+    counterparty_account = Column(String, nullable=True)
+
+    # Контрагент
+    counterparty_inn = Column(String, nullable=True)
+    counterparty_name = Column(String, nullable=True)
+
+    # Текст
+    description = Column(Text, nullable=True)
+
+    # Категория (пока все "other")
+    operation_category = Column(
+        String,
+        nullable=False,
+        default="other",
+        server_default="other"
     )
 
-    amount: Mapped[Decimal] = mapped_column(
-        Numeric(15, 2),
-        nullable=False
-    )
-
-    operation_date: Mapped[datetime] = mapped_column(
+    created_at = Column(
         DateTime,
+        default=datetime.utcnow,
         nullable=False
     )
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "document_number",
+            "document_type",
+            "operation_date",
+            "amount",
+            "direction",
+            name="uq_operation_identity"
+        ),
+        Index("idx_operation_company_date", "company_id", "operation_date"),
+        Index("idx_operation_company_inn", "company_id", "counterparty_inn"),
     )

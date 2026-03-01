@@ -4,6 +4,7 @@ from uuid import uuid4
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.database import Base
+from sqlalchemy.orm import relationship
 
 
 class Company(Base):
@@ -13,6 +14,11 @@ class Company(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid4
+    )
+    bank_operations = relationship(
+    "BankOperation",
+    back_populates="company",
+    cascade="all, delete-orphan"
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     inn: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
