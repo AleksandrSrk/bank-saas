@@ -12,8 +12,8 @@ from sqlalchemy import (
     Index
 )
 from sqlalchemy.dialects.postgresql import UUID
-from app.db.database import Base
 from sqlalchemy.orm import relationship
+from app.db.database import Base
 
 
 class BankOperation(Base):
@@ -26,9 +26,21 @@ class BankOperation(Base):
         ForeignKey("companies.id", ondelete="CASCADE"),
         nullable=False
     )
+
+    import_batch_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("operation_batches.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
     company = relationship(
-    "Company",
-    back_populates="bank_operations"
+        "Company",
+        back_populates="bank_operations"
+    )
+
+    batch = relationship(
+        "OperationBatch",
+        back_populates="operations"
     )
 
     # Документ
@@ -54,7 +66,7 @@ class BankOperation(Base):
     # Текст
     description = Column(Text, nullable=True)
 
-    # Категория (пока все "other")
+    # Категория
     operation_category = Column(
         String,
         nullable=False,

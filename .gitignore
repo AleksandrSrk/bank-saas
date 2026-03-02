@@ -38,3 +38,5 @@ htmlcov/
 
 # Alembic cache
 migrations/__pycache__/
+
+ARCHITECTURE_NOTES.md

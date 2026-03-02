@@ -19,6 +19,11 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from app.db.database import Base
+
+from app.models.company import Company
+from app.models.bank_operation import BankOperation
+from app.models.operation_batch import OperationBatch
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
