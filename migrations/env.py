@@ -23,6 +23,7 @@ from app.db.database import Base
 from app.models.company import Company
 from app.models.bank_operation import BankOperation
 from app.models.operation_batch import OperationBatch
+from app.models.bank_connection import BankConnection
 
 target_metadata = Base.metadata
 

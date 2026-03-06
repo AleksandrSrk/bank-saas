@@ -10,7 +10,7 @@ from app.schemas.bank_operation import (
     BankOperationCreate,
     BankOperationRead
 ) 
-
+from app.models.bank_operation import BankOperation
 from app.services.company_service import get_company
 
 from app.services.bank_operation_service import (
@@ -77,3 +77,21 @@ def operations_summary(
         date_from=date_from,
         date_to=date_to,
     )
+@router.get("/operations")
+def get_operations(
+    company_id: str,
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+
+    operations = (
+        db.query(BankOperation)
+        .filter(BankOperation.company_id == company_id)
+        .order_by(BankOperation.operation_date.desc())
+        .limit(limit)
+        .offset(offset)
+        .all()
+    )
+
+    return operations

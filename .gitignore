@@ -40,3 +40,7 @@ htmlcov/
 migrations/__pycache__/
 
 ARCHITECTURE_NOTES.md
+
+# env files
+.env
+.env.*

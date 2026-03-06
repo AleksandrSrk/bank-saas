@@ -6,11 +6,17 @@ from app.db.database import engine
 from app.db.dependencies import get_db
 from app.api.company_router import router as company_router
 from app.api.bank_operation_router import router as bank_operation_router
+from app.api.import_router import router as import_router
+from app.api.bank_connection_router import router as bank_connection_router
+from app.api.bank_sync_router import router as bank_sync_router
 
 app = FastAPI()
 
 app.include_router(company_router)
 app.include_router(bank_operation_router)
+app.include_router(import_router)
+app.include_router(bank_connection_router)
+app.include_router(bank_sync_router)
 
 @app.get("/")
 def healthcheck():
