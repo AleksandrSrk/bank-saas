@@ -27,21 +27,21 @@ class BankOperation(Base):
         nullable=False
     )
 
-    import_batch_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("operation_batches.id", ondelete="CASCADE"),
-        nullable=False
-    )
+    # import_batch_id = Column(
+    #     UUID(as_uuid=True),
+    #     ForeignKey("operation_batches.id", ondelete="CASCADE"),
+    #     nullable=True
+    # )
 
     company = relationship(
         "Company",
         back_populates="bank_operations"
     )
 
-    batch = relationship(
-        "OperationBatch",
-        back_populates="operations"
-    )
+    # batch = relationship(
+    #     "OperationBatch",
+    #     back_populates="operations"
+    # )
 
     # Документ
     document_number = Column(String, nullable=False)
