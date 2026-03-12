@@ -22,3 +22,5 @@ class BankConnection(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     consent_id = Column(String)
+
+    last_synced_at = Column(DateTime, nullable=True)

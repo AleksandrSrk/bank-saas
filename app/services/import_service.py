@@ -13,7 +13,10 @@ from app.models.operation_batch import OperationBatch
 from app.models.bank_operation import BankOperation
 from app.domain.enums import OperationDirection
 
+
 class ImportService:
+
+    BATCH_SIZE = 1000
 
     def __init__(self, db: Session):
         self.db = db
@@ -24,21 +27,20 @@ class ImportService:
         company_id: UUID,
         filename: str,
     ) -> ImportResult:
-        """
-        Основной метод импорта операций.
-        """
 
         batch = self._create_batch(company_id, filename)
 
+        total_count = 0
+        inserted_count = 0
+
         try:
+
             values = []
 
             for index, dto in enumerate(dtos):
 
-                # валидация DTO
                 self._validate_dto(dto, index)
 
-                # формирование dict операции
                 operation_dict = self._build_operation_dict(
                     dto,
                     company_id,
@@ -46,26 +48,16 @@ class ImportService:
                 )
 
                 values.append(operation_dict)
+                total_count += 1
 
-            total_count = len(values)
+                if len(values) >= self.BATCH_SIZE:
+                    inserted_count += self._insert_batch(values)
+                    values.clear()
 
-            # bulk insert
-            stmt = insert(BankOperation).values(values)
+            # вставляем остаток
+            if values:
+                inserted_count += self._insert_batch(values)
 
-            stmt = stmt.on_conflict_do_nothing(
-                index_elements=[
-                    "company_id",
-                    "document_number",
-                    "document_type",
-                    "operation_date",
-                    "amount",
-                    "direction",
-                ]
-            )
-
-            result = self.db.execute(stmt)
-
-            inserted_count = result.rowcount or 0
             duplicate_count = total_count - inserted_count
 
             batch.status = ImportStatus.SUCCESS.value
@@ -106,6 +98,25 @@ class ImportService:
                 created_at=batch.created_at,
             )
 
+    def _insert_batch(self, values):
+
+        stmt = insert(BankOperation).values(values)
+
+        stmt = stmt.on_conflict_do_nothing(
+            index_elements=[
+                "company_id",
+                "document_number",
+                "document_type",
+                "operation_date",
+                "amount",
+                "direction",
+            ]
+        )
+
+        result = self.db.execute(stmt)
+
+        return result.rowcount or 0
+
     def _create_batch(self, company_id: UUID, filename: str) -> OperationBatch:
 
         batch = OperationBatch(
@@ -123,7 +134,6 @@ class ImportService:
 
     def _validate_dto(self, dto: OperationImportDTO, index: int) -> None:
 
-        # обязательные поля
         if not dto.document_number:
             raise ImportValidationError(
                 "Document number is required",
@@ -145,7 +155,6 @@ class ImportService:
         debit = dto.debit_amount
         credit = dto.credit_amount
 
-        # должен быть либо debit либо credit
         if debit is None and credit is None:
             raise ImportValidationError(
                 "Operation must contain either debit or credit amount",
@@ -158,7 +167,6 @@ class ImportService:
                 index
             )
 
-        # проверка > 0
         if debit is not None and debit <= Decimal("0"):
             raise ImportValidationError(
                 "Debit amount must be greater than 0",

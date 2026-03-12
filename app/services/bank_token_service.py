@@ -1,0 +1,54 @@
+import requests
+from datetime import datetime, timedelta
+
+from app.models.bank_connection import BankConnection
+from app.config.settings import settings
+
+
+class BankTokenService:
+
+    @staticmethod
+    def ensure_valid_token(db, connection: BankConnection):
+
+        # если нет expires_at — просто используем токен
+        if not connection.expires_at:
+            return connection.access_token
+
+        # если токен еще жив — возвращаем его
+        if connection.expires_at > datetime.utcnow():
+            return connection.access_token
+
+        # токен истек — обновляем
+        new_token = BankTokenService.refresh_token(connection)
+
+        connection.access_token = new_token["access_token"]
+        connection.refresh_token = new_token.get(
+            "refresh_token",
+            connection.refresh_token
+        )
+
+        connection.expires_at = datetime.utcnow() + timedelta(
+            seconds=new_token["expires_in"]
+        )
+
+        db.commit()
+
+        return connection.access_token
+
+    @staticmethod
+    def refresh_token(connection: BankConnection):
+
+        url = settings.TOCHKA_TOKEN_URL
+
+        payload = {
+            "grant_type": "refresh_token",
+            "refresh_token": connection.refresh_token,
+            "client_id": settings.TOCHKA_CLIENT_ID,
+            "client_secret": settings.TOCHKA_CLIENT_SECRET,
+        }
+
+        response = requests.post(url, data=payload)
+
+        response.raise_for_status()
+
+        return response.json()
