@@ -5,6 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -24,6 +25,7 @@ from app.models.company import Company
 from app.models.bank_operation import BankOperation
 from app.models.operation_batch import OperationBatch
 from app.models.bank_connection import BankConnection
+from app.models.bank_account import BankAccount
 
 target_metadata = Base.metadata
 

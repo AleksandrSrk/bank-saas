@@ -44,3 +44,9 @@ ARCHITECTURE_NOTES.md
 # env files
 .env
 .env.*
+
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/

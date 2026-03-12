@@ -12,11 +12,10 @@ def parse_1c_client_bank(file_path: str) -> Generator[OperationImportDTO, None, 
     with open(file_path, "r", encoding="cp1251") as f:
 
         for line in f:
-
             line = line.strip()
 
             if line.startswith("СекцияДокумент"):
-                current_doc = {}
+                current_doc.clear()
                 continue
 
             if line == "КонецДокумента":
@@ -28,11 +27,11 @@ def parse_1c_client_bank(file_path: str) -> Generator[OperationImportDTO, None, 
 
                 continue
 
-            if "=" in line:
+            if "=" not in line:
+                continue
 
-                key, value = line.split("=", 1)
-
-                current_doc[key] = value
+            key, value = line.split("=", 1)
+            current_doc[key] = value
 
 
 def _build_dto(data: dict) -> OperationImportDTO | None:
@@ -40,7 +39,8 @@ def _build_dto(data: dict) -> OperationImportDTO | None:
     document_number = data.get("Номер")
     document_date = _parse_date(data.get("Дата"))
 
-    amount = Decimal(data.get("Сумма", "0"))
+    amount_str = data.get("Сумма")
+    amount = Decimal(amount_str) if amount_str else Decimal("0")
 
     date_debit = _parse_date(data.get("ДатаСписано"))
     date_credit = _parse_date(data.get("ДатаПоступило"))
@@ -96,5 +96,5 @@ def _parse_date(date_str: str | None):
 
     try:
         return datetime.strptime(date_str, "%d.%m.%Y")
-    except:
+    except ValueError:
         return None
