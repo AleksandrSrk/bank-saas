@@ -11,6 +11,8 @@ from app.api.bank_connection_router import router as bank_connection_router
 from app.api.bank_sync_router import router as bank_sync_router
 from app.services.sync_scheduler import start_scheduler
 
+from app.api.telegram_router import router as telegram_router
+
 app = FastAPI()
 
 app.include_router(company_router)
@@ -18,6 +20,8 @@ app.include_router(bank_operation_router)
 app.include_router(import_router)
 app.include_router(bank_connection_router)
 app.include_router(bank_sync_router)
+
+app.include_router(telegram_router)
 
 
 @app.on_event("startup")
