@@ -10,3 +10,4 @@ from app.models.user_role import UserRole
 from app.models.telegram_account import TelegramAccount
 
 from app.models.manager_request import ManagerRequest
+from .tracked_company import TrackedCompany
