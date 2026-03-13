@@ -18,12 +18,14 @@ D:.
 |   |   |   bank_sync_router.py
 |   |   |   company_router.py
 |   |   |   import_router.py
+|   |   |   telegram_router.py
 |   |   |   
 |   |           bank_connection_router.cpython-310.pyc
 |   |           bank_operation_router.cpython-310.pyc
 |   |           bank_sync_router.cpython-310.pyc
 |   |           company_router.cpython-310.pyc
 |   |           import_router.cpython-310.pyc
+|   |           telegram_router.cpython-310.pyc
 |   |           
 |   +---config
 |   |   |   settings.py
@@ -45,6 +47,17 @@ D:.
 |   |           enums.cpython-310.pyc
 |   |           
 |   +---integrations
+|   |   +---banks
+|   |   |   +---base
+|   |   |   |       bank_adapter.py
+|   |   |   |       bank_client.py
+|   |   |   |       __init__.py
+|   |   |   |       
+|   |   |   \---tochka
+|   |   |           adapter.py
+|   |   |           client.py
+|   |   |           __init__.py
+|   |   |           
 |   |   \---tochka
 |   |       |   client.py
 |   |       |   __init__.py
@@ -57,19 +70,31 @@ D:.
 |   |   |   bank_connection.py
 |   |   |   bank_operation.py
 |   |   |   company.py
+|   |   |   manager_request.py
 |   |   |   operation_batch.py
+|   |   |   role.py
+|   |   |   telegram_account.py
+|   |   |   user.py
+|   |   |   user_role.py
+|   |   |   __init__.py
 |   |   |   
 |   |           bank_account.cpython-310.pyc
 |   |           bank_connection.cpython-310.pyc
 |   |           bank_operation.cpython-310.pyc
 |   |           company.cpython-310.pyc
+|   |           manager_request.cpython-310.pyc
 |   |           operation_batch.cpython-310.pyc
+|   |           role.cpython-310.pyc
+|   |           telegram_account.cpython-310.pyc
+|   |           user.cpython-310.pyc
+|   |           user_role.cpython-310.pyc
 |   |           
 |   +---parsers
 |   |   |   kl_to_1c_parser.py
 |   |   |   
 |   |           kl_to_1c_parser.cpython-310.pyc
 |   |           
+|   +---repositories
 |   +---schemas
 |   |   |   bank_connection.py
 |   |   |   bank_operation.py
@@ -79,12 +104,19 @@ D:.
 |   |           bank_operation.cpython-310.pyc
 |   |           company.cpython-310.pyc
 |   |           
+|   +---scripts
+|   |   |   seed_roles.py
+|   |   |   
+|   |           seed_roles.cpython-310.pyc
+|   |           
 |   +---services
+|   |   |   account_sync_service.py
 |   |   |   bank_connection_service.py
 |   |   |   bank_operation_service.py
 |   |   |   bank_token_service.py
 |   |   |   company_service.py
 |   |   |   import_service.py
+|   |   |   operation_sync_service.py
 |   |   |   sync_scheduler.py
 |   |   |   tochka_sync_service.py
 |   |   |   
@@ -105,22 +137,32 @@ D:.
 |   |   
 |   +---versions
 |   |   |   05be4ed2d0e7_add_bank_connections_table.py
+|   |   |   0686d7bc2a01_add_rbac_and_telegram_tables.py
+|   |   |   2fa9e6053e83_add_manager_requests.py
+|   |   |   54d688eaee27_create_bank_accounts_table.py
 |   |   |   5d1b36177f47_create_new_bank_operations_structure.py
 |   |   |   5ee7da6f867d_add_consent_id_to_bank_connections.py
+|   |   |   7a4862701a03_merge_heads.py
 |   |   |   7c31c841308f_add_operation_batches_and_batch_relation.py
 |   |   |   818f80800b9e_add_bank_account_id_to_operations.py
 |   |   |   a16a535e2aca_add_bank_accounts_table.py
+|   |   |   bff3debb657a_add_last_synced_at_to_bank_accounts.py
 |   |   |   dfb04bd5d557_create_companies_table.py
 |   |   |   fa468ae2d01a_add_last_synced_at_to_bank_connections.py
 |   |   |   
 |   |           05be4ed2d0e7_add_bank_connections_table.cpython-310.pyc
+|   |           0686d7bc2a01_add_rbac_and_telegram_tables.cpython-310.pyc
+|   |           2fa9e6053e83_add_manager_requests.cpython-310.pyc
+|   |           54d688eaee27_create_bank_accounts_table.cpython-310.pyc
 |   |           5c39e5b110cd_add_bank_operations_table.cpython-310.pyc
 |   |           5d1b36177f47_create_new_bank_operations_structure.cpython-310.pyc
 |   |           5ee7da6f867d_add_consent_id_to_bank_connections.cpython-310.pyc
 |   |           5f209f7decfc_add_unique_constraint_to_bank_operations.cpython-310.pyc
+|   |           7a4862701a03_merge_heads.cpython-310.pyc
 |   |           7c31c841308f_add_operation_batches_and_batch_relation.cpython-310.pyc
 |   |           818f80800b9e_add_bank_account_id_to_operations.cpython-310.pyc
 |   |           a16a535e2aca_add_bank_accounts_table.cpython-310.pyc
+|   |           bff3debb657a_add_last_synced_at_to_bank_accounts.cpython-310.pyc
 |   |           dfb04bd5d557_create_companies_table.cpython-310.pyc
 |   |           fa468ae2d01a_add_last_synced_at_to_bank_connections.cpython-310.pyc
 |   |           
@@ -129,7 +171,10 @@ D:.
 +---tests
 |   |   test_import.py
 |   |   test_parser.py
+|   |   test_sync_accounts.py
+|   |   test_sync_operations.py
 |   |   test_tochka.py
+|   |   test_tochka_client.py
 |   |   
 |   +---fixtures
 |   |       kl_to_1c_40702810020000066887_044525104_01.02.2026-27.02.2026.txt
