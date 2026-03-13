@@ -18,3 +18,6 @@ alembic heads
 # Перед применением миграции всегда делай: 
 alembic revision --autogenerate -m "..." 
 Если Alembic пишет что-то кроме: Detected added table Detected added column значит нужно проверить.
+
+# Запуск бота тлг 
+python -m bot.telegram_bot

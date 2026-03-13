@@ -74,6 +74,7 @@ D:.
 |   |   |   operation_batch.py
 |   |   |   role.py
 |   |   |   telegram_account.py
+|   |   |   tracked_company.py
 |   |   |   user.py
 |   |   |   user_role.py
 |   |   |   __init__.py
@@ -86,8 +87,10 @@ D:.
 |   |           operation_batch.cpython-310.pyc
 |   |           role.cpython-310.pyc
 |   |           telegram_account.cpython-310.pyc
+|   |           tracked_company.cpython-310.pyc
 |   |           user.cpython-310.pyc
 |   |           user_role.cpython-310.pyc
+|   |           __init__.cpython-310.pyc
 |   |           
 |   +---parsers
 |   |   |   kl_to_1c_parser.py
@@ -95,6 +98,17 @@ D:.
 |   |           kl_to_1c_parser.cpython-310.pyc
 |   |           
 |   +---repositories
+|   |   |   bank_operation_repository.py
+|   |   |   manager_request_repository.py
+|   |   |   telegram_repository.py
+|   |   |   tracked_company_repository.py
+|   |   |   user_repository.py
+|   |   |   __init__.py
+|   |   |   
+|   |           manager_request_repository.cpython-310.pyc
+|   |           tracked_company_repository.cpython-310.pyc
+|   |           __init__.cpython-310.pyc
+|   |           
 |   +---schemas
 |   |   |   bank_connection.py
 |   |   |   bank_operation.py
@@ -130,6 +144,15 @@ D:.
 |   |           
 |           main.cpython-310.pyc
 |           
++---bot
+|   |   config.py
+|   |   telegram_bot.py
+|   |   __init__.py
+|   |   
+|           config.cpython-310.pyc
+|           telegram_bot.cpython-310.pyc
+|           __init__.cpython-310.pyc
+|           
 +---migrations
 |   |   env.py
 |   |   README
@@ -140,6 +163,7 @@ D:.
 |   |   |   0686d7bc2a01_add_rbac_and_telegram_tables.py
 |   |   |   2fa9e6053e83_add_manager_requests.py
 |   |   |   54d688eaee27_create_bank_accounts_table.py
+|   |   |   56b46ad0df01_company_reserved_status.py
 |   |   |   5d1b36177f47_create_new_bank_operations_structure.py
 |   |   |   5ee7da6f867d_add_consent_id_to_bank_connections.py
 |   |   |   7a4862701a03_merge_heads.py
@@ -147,6 +171,7 @@ D:.
 |   |   |   818f80800b9e_add_bank_account_id_to_operations.py
 |   |   |   a16a535e2aca_add_bank_accounts_table.py
 |   |   |   bff3debb657a_add_last_synced_at_to_bank_accounts.py
+|   |   |   c8ab8152fff1_add_tracked_companies_table.py
 |   |   |   dfb04bd5d557_create_companies_table.py
 |   |   |   fa468ae2d01a_add_last_synced_at_to_bank_connections.py
 |   |   |   
@@ -154,6 +179,7 @@ D:.
 |   |           0686d7bc2a01_add_rbac_and_telegram_tables.cpython-310.pyc
 |   |           2fa9e6053e83_add_manager_requests.cpython-310.pyc
 |   |           54d688eaee27_create_bank_accounts_table.cpython-310.pyc
+|   |           56b46ad0df01_company_reserved_status.cpython-310.pyc
 |   |           5c39e5b110cd_add_bank_operations_table.cpython-310.pyc
 |   |           5d1b36177f47_create_new_bank_operations_structure.cpython-310.pyc
 |   |           5ee7da6f867d_add_consent_id_to_bank_connections.cpython-310.pyc
@@ -163,6 +189,7 @@ D:.
 |   |           818f80800b9e_add_bank_account_id_to_operations.cpython-310.pyc
 |   |           a16a535e2aca_add_bank_accounts_table.cpython-310.pyc
 |   |           bff3debb657a_add_last_synced_at_to_bank_accounts.cpython-310.pyc
+|   |           c8ab8152fff1_add_tracked_companies_table.cpython-310.pyc
 |   |           dfb04bd5d557_create_companies_table.cpython-310.pyc
 |   |           fa468ae2d01a_add_last_synced_at_to_bank_connections.cpython-310.pyc
 |   |           
@@ -197,6 +224,1537 @@ D:.
     |       |   distutils-precedence.pth
     |       |   typing_extensions.py
     |       |   
+    |       +---aiofiles
+    |       |   |   base.py
+    |       |   |   os.py
+    |       |   |   ospath.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |   +---tempfile
+    |       |   |   |   temptypes.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           temptypes.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---threadpool
+    |       |   |   |   binary.py
+    |       |   |   |   text.py
+    |       |   |   |   utils.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           binary.cpython-310.pyc
+    |       |   |           text.cpython-310.pyc
+    |       |   |           utils.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |           base.cpython-310.pyc
+    |       |           os.cpython-310.pyc
+    |       |           ospath.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---aiofiles-25.1.0.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           NOTICE
+    |       |           
+    |       +---aiogram
+    |       |   |   exceptions.py
+    |       |   |   loggers.py
+    |       |   |   py.typed
+    |       |   |   __init__.py
+    |       |   |   __meta__.py
+    |       |   |   
+    |       |   +---client
+    |       |   |   |   bot.py
+    |       |   |   |   context_controller.py
+    |       |   |   |   default.py
+    |       |   |   |   telegram.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |   +---session
+    |       |   |   |   |   aiohttp.py
+    |       |   |   |   |   base.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |   +---middlewares
+    |       |   |   |   |   |   base.py
+    |       |   |   |   |   |   manager.py
+    |       |   |   |   |   |   request_logging.py
+    |       |   |   |   |   |   __init__.py
+    |       |   |   |   |   |   
+    |       |   |   |   |           base.cpython-310.pyc
+    |       |   |   |   |           manager.cpython-310.pyc
+    |       |   |   |   |           request_logging.cpython-310.pyc
+    |       |   |   |   |           __init__.cpython-310.pyc
+    |       |   |   |   |           
+    |       |   |   |           aiohttp.cpython-310.pyc
+    |       |   |   |           base.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
+    |       |   |           bot.cpython-310.pyc
+    |       |   |           context_controller.cpython-310.pyc
+    |       |   |           default.cpython-310.pyc
+    |       |   |           telegram.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---dispatcher
+    |       |   |   |   dispatcher.py
+    |       |   |   |   flags.py
+    |       |   |   |   router.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |   +---event
+    |       |   |   |   |   bases.py
+    |       |   |   |   |   event.py
+    |       |   |   |   |   handler.py
+    |       |   |   |   |   telegram.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |           bases.cpython-310.pyc
+    |       |   |   |           event.cpython-310.pyc
+    |       |   |   |           handler.cpython-310.pyc
+    |       |   |   |           telegram.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
+    |       |   |   +---middlewares
+    |       |   |   |   |   base.py
+    |       |   |   |   |   data.py
+    |       |   |   |   |   error.py
+    |       |   |   |   |   manager.py
+    |       |   |   |   |   user_context.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |           base.cpython-310.pyc
+    |       |   |   |           data.cpython-310.pyc
+    |       |   |   |           error.cpython-310.pyc
+    |       |   |   |           manager.cpython-310.pyc
+    |       |   |   |           user_context.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
+    |       |   |           dispatcher.cpython-310.pyc
+    |       |   |           flags.cpython-310.pyc
+    |       |   |           router.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---enums
+    |       |   |   |   bot_command_scope_type.py
+    |       |   |   |   button_style.py
+    |       |   |   |   chat_action.py
+    |       |   |   |   chat_boost_source_type.py
+    |       |   |   |   chat_member_status.py
+    |       |   |   |   chat_type.py
+    |       |   |   |   content_type.py
+    |       |   |   |   currency.py
+    |       |   |   |   dice_emoji.py
+    |       |   |   |   encrypted_passport_element.py
+    |       |   |   |   inline_query_result_type.py
+    |       |   |   |   input_media_type.py
+    |       |   |   |   input_paid_media_type.py
+    |       |   |   |   input_profile_photo_type.py
+    |       |   |   |   input_story_content_type.py
+    |       |   |   |   keyboard_button_poll_type_type.py
+    |       |   |   |   mask_position_point.py
+    |       |   |   |   menu_button_type.py
+    |       |   |   |   message_entity_type.py
+    |       |   |   |   message_origin_type.py
+    |       |   |   |   owned_gift_type.py
+    |       |   |   |   paid_media_type.py
+    |       |   |   |   parse_mode.py
+    |       |   |   |   passport_element_error_type.py
+    |       |   |   |   poll_type.py
+    |       |   |   |   reaction_type_type.py
+    |       |   |   |   revenue_withdrawal_state_type.py
+    |       |   |   |   sticker_format.py
+    |       |   |   |   sticker_type.py
+    |       |   |   |   story_area_type_type.py
+    |       |   |   |   topic_icon_color.py
+    |       |   |   |   transaction_partner_type.py
+    |       |   |   |   transaction_partner_user_transaction_type_enum.py
+    |       |   |   |   update_type.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           bot_command_scope_type.cpython-310.pyc
+    |       |   |           button_style.cpython-310.pyc
+    |       |   |           chat_action.cpython-310.pyc
+    |       |   |           chat_boost_source_type.cpython-310.pyc
+    |       |   |           chat_member_status.cpython-310.pyc
+    |       |   |           chat_type.cpython-310.pyc
+    |       |   |           content_type.cpython-310.pyc
+    |       |   |           currency.cpython-310.pyc
+    |       |   |           dice_emoji.cpython-310.pyc
+    |       |   |           encrypted_passport_element.cpython-310.pyc
+    |       |   |           inline_query_result_type.cpython-310.pyc
+    |       |   |           input_media_type.cpython-310.pyc
+    |       |   |           input_paid_media_type.cpython-310.pyc
+    |       |   |           input_profile_photo_type.cpython-310.pyc
+    |       |   |           input_story_content_type.cpython-310.pyc
+    |       |   |           keyboard_button_poll_type_type.cpython-310.pyc
+    |       |   |           mask_position_point.cpython-310.pyc
+    |       |   |           menu_button_type.cpython-310.pyc
+    |       |   |           message_entity_type.cpython-310.pyc
+    |       |   |           message_origin_type.cpython-310.pyc
+    |       |   |           owned_gift_type.cpython-310.pyc
+    |       |   |           paid_media_type.cpython-310.pyc
+    |       |   |           parse_mode.cpython-310.pyc
+    |       |   |           passport_element_error_type.cpython-310.pyc
+    |       |   |           poll_type.cpython-310.pyc
+    |       |   |           reaction_type_type.cpython-310.pyc
+    |       |   |           revenue_withdrawal_state_type.cpython-310.pyc
+    |       |   |           sticker_format.cpython-310.pyc
+    |       |   |           sticker_type.cpython-310.pyc
+    |       |   |           story_area_type_type.cpython-310.pyc
+    |       |   |           topic_icon_color.cpython-310.pyc
+    |       |   |           transaction_partner_type.cpython-310.pyc
+    |       |   |           transaction_partner_user_transaction_type_enum.cpython-310.pyc
+    |       |   |           update_type.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---filters
+    |       |   |   |   base.py
+    |       |   |   |   callback_data.py
+    |       |   |   |   chat_member_updated.py
+    |       |   |   |   command.py
+    |       |   |   |   exception.py
+    |       |   |   |   logic.py
+    |       |   |   |   magic_data.py
+    |       |   |   |   state.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           base.cpython-310.pyc
+    |       |   |           callback_data.cpython-310.pyc
+    |       |   |           chat_member_updated.cpython-310.pyc
+    |       |   |           command.cpython-310.pyc
+    |       |   |           exception.cpython-310.pyc
+    |       |   |           logic.cpython-310.pyc
+    |       |   |           magic_data.cpython-310.pyc
+    |       |   |           state.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---fsm
+    |       |   |   |   context.py
+    |       |   |   |   middleware.py
+    |       |   |   |   scene.py
+    |       |   |   |   state.py
+    |       |   |   |   strategy.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |   +---storage
+    |       |   |   |   |   base.py
+    |       |   |   |   |   memory.py
+    |       |   |   |   |   mongo.py
+    |       |   |   |   |   pymongo.py
+    |       |   |   |   |   redis.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |           base.cpython-310.pyc
+    |       |   |   |           memory.cpython-310.pyc
+    |       |   |   |           mongo.cpython-310.pyc
+    |       |   |   |           pymongo.cpython-310.pyc
+    |       |   |   |           redis.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
+    |       |   |           context.cpython-310.pyc
+    |       |   |           middleware.cpython-310.pyc
+    |       |   |           scene.cpython-310.pyc
+    |       |   |           state.cpython-310.pyc
+    |       |   |           strategy.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---handlers
+    |       |   |   |   base.py
+    |       |   |   |   callback_query.py
+    |       |   |   |   chat_member.py
+    |       |   |   |   chosen_inline_result.py
+    |       |   |   |   error.py
+    |       |   |   |   inline_query.py
+    |       |   |   |   message.py
+    |       |   |   |   poll.py
+    |       |   |   |   pre_checkout_query.py
+    |       |   |   |   shipping_query.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           base.cpython-310.pyc
+    |       |   |           callback_query.cpython-310.pyc
+    |       |   |           chat_member.cpython-310.pyc
+    |       |   |           chosen_inline_result.cpython-310.pyc
+    |       |   |           error.cpython-310.pyc
+    |       |   |           inline_query.cpython-310.pyc
+    |       |   |           message.cpython-310.pyc
+    |       |   |           poll.cpython-310.pyc
+    |       |   |           pre_checkout_query.cpython-310.pyc
+    |       |   |           shipping_query.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---methods
+    |       |   |   |   add_sticker_to_set.py
+    |       |   |   |   answer_callback_query.py
+    |       |   |   |   answer_inline_query.py
+    |       |   |   |   answer_pre_checkout_query.py
+    |       |   |   |   answer_shipping_query.py
+    |       |   |   |   answer_web_app_query.py
+    |       |   |   |   approve_chat_join_request.py
+    |       |   |   |   approve_suggested_post.py
+    |       |   |   |   ban_chat_member.py
+    |       |   |   |   ban_chat_sender_chat.py
+    |       |   |   |   base.py
+    |       |   |   |   close.py
+    |       |   |   |   close_forum_topic.py
+    |       |   |   |   close_general_forum_topic.py
+    |       |   |   |   convert_gift_to_stars.py
+    |       |   |   |   copy_message.py
+    |       |   |   |   copy_messages.py
+    |       |   |   |   create_chat_invite_link.py
+    |       |   |   |   create_chat_subscription_invite_link.py
+    |       |   |   |   create_forum_topic.py
+    |       |   |   |   create_invoice_link.py
+    |       |   |   |   create_new_sticker_set.py
+    |       |   |   |   decline_chat_join_request.py
+    |       |   |   |   decline_suggested_post.py
+    |       |   |   |   delete_business_messages.py
+    |       |   |   |   delete_chat_photo.py
+    |       |   |   |   delete_chat_sticker_set.py
+    |       |   |   |   delete_forum_topic.py
+    |       |   |   |   delete_message.py
+    |       |   |   |   delete_messages.py
+    |       |   |   |   delete_my_commands.py
+    |       |   |   |   delete_sticker_from_set.py
+    |       |   |   |   delete_sticker_set.py
+    |       |   |   |   delete_story.py
+    |       |   |   |   delete_webhook.py
+    |       |   |   |   edit_chat_invite_link.py
+    |       |   |   |   edit_chat_subscription_invite_link.py
+    |       |   |   |   edit_forum_topic.py
+    |       |   |   |   edit_general_forum_topic.py
+    |       |   |   |   edit_message_caption.py
+    |       |   |   |   edit_message_checklist.py
+    |       |   |   |   edit_message_live_location.py
+    |       |   |   |   edit_message_media.py
+    |       |   |   |   edit_message_reply_markup.py
+    |       |   |   |   edit_message_text.py
+    |       |   |   |   edit_story.py
+    |       |   |   |   edit_user_star_subscription.py
+    |       |   |   |   export_chat_invite_link.py
+    |       |   |   |   forward_message.py
+    |       |   |   |   forward_messages.py
+    |       |   |   |   get_available_gifts.py
+    |       |   |   |   get_business_account_gifts.py
+    |       |   |   |   get_business_account_star_balance.py
+    |       |   |   |   get_business_connection.py
+    |       |   |   |   get_chat.py
+    |       |   |   |   get_chat_administrators.py
+    |       |   |   |   get_chat_gifts.py
+    |       |   |   |   get_chat_member.py
+    |       |   |   |   get_chat_member_count.py
+    |       |   |   |   get_chat_menu_button.py
+    |       |   |   |   get_custom_emoji_stickers.py
+    |       |   |   |   get_file.py
+    |       |   |   |   get_forum_topic_icon_stickers.py
+    |       |   |   |   get_game_high_scores.py
+    |       |   |   |   get_me.py
+    |       |   |   |   get_my_commands.py
+    |       |   |   |   get_my_default_administrator_rights.py
+    |       |   |   |   get_my_description.py
+    |       |   |   |   get_my_name.py
+    |       |   |   |   get_my_short_description.py
+    |       |   |   |   get_my_star_balance.py
+    |       |   |   |   get_star_transactions.py
+    |       |   |   |   get_sticker_set.py
+    |       |   |   |   get_updates.py
+    |       |   |   |   get_user_chat_boosts.py
+    |       |   |   |   get_user_gifts.py
+    |       |   |   |   get_user_profile_audios.py
+    |       |   |   |   get_user_profile_photos.py
+    |       |   |   |   get_webhook_info.py
+    |       |   |   |   gift_premium_subscription.py
+    |       |   |   |   hide_general_forum_topic.py
+    |       |   |   |   leave_chat.py
+    |       |   |   |   log_out.py
+    |       |   |   |   pin_chat_message.py
+    |       |   |   |   post_story.py
+    |       |   |   |   promote_chat_member.py
+    |       |   |   |   read_business_message.py
+    |       |   |   |   refund_star_payment.py
+    |       |   |   |   remove_business_account_profile_photo.py
+    |       |   |   |   remove_chat_verification.py
+    |       |   |   |   remove_my_profile_photo.py
+    |       |   |   |   remove_user_verification.py
+    |       |   |   |   reopen_forum_topic.py
+    |       |   |   |   reopen_general_forum_topic.py
+    |       |   |   |   replace_sticker_in_set.py
+    |       |   |   |   repost_story.py
+    |       |   |   |   restrict_chat_member.py
+    |       |   |   |   revoke_chat_invite_link.py
+    |       |   |   |   save_prepared_inline_message.py
+    |       |   |   |   send_animation.py
+    |       |   |   |   send_audio.py
+    |       |   |   |   send_chat_action.py
+    |       |   |   |   send_checklist.py
+    |       |   |   |   send_contact.py
+    |       |   |   |   send_dice.py
+    |       |   |   |   send_document.py
+    |       |   |   |   send_game.py
+    |       |   |   |   send_gift.py
+    |       |   |   |   send_invoice.py
+    |       |   |   |   send_location.py
+    |       |   |   |   send_media_group.py
+    |       |   |   |   send_message.py
+    |       |   |   |   send_message_draft.py
+    |       |   |   |   send_paid_media.py
+    |       |   |   |   send_photo.py
+    |       |   |   |   send_poll.py
+    |       |   |   |   send_sticker.py
+    |       |   |   |   send_venue.py
+    |       |   |   |   send_video.py
+    |       |   |   |   send_video_note.py
+    |       |   |   |   send_voice.py
+    |       |   |   |   set_business_account_bio.py
+    |       |   |   |   set_business_account_gift_settings.py
+    |       |   |   |   set_business_account_name.py
+    |       |   |   |   set_business_account_profile_photo.py
+    |       |   |   |   set_business_account_username.py
+    |       |   |   |   set_chat_administrator_custom_title.py
+    |       |   |   |   set_chat_description.py
+    |       |   |   |   set_chat_member_tag.py
+    |       |   |   |   set_chat_menu_button.py
+    |       |   |   |   set_chat_permissions.py
+    |       |   |   |   set_chat_photo.py
+    |       |   |   |   set_chat_sticker_set.py
+    |       |   |   |   set_chat_title.py
+    |       |   |   |   set_custom_emoji_sticker_set_thumbnail.py
+    |       |   |   |   set_game_score.py
+    |       |   |   |   set_message_reaction.py
+    |       |   |   |   set_my_commands.py
+    |       |   |   |   set_my_default_administrator_rights.py
+    |       |   |   |   set_my_description.py
+    |       |   |   |   set_my_name.py
+    |       |   |   |   set_my_profile_photo.py
+    |       |   |   |   set_my_short_description.py
+    |       |   |   |   set_passport_data_errors.py
+    |       |   |   |   set_sticker_emoji_list.py
+    |       |   |   |   set_sticker_keywords.py
+    |       |   |   |   set_sticker_mask_position.py
+    |       |   |   |   set_sticker_position_in_set.py
+    |       |   |   |   set_sticker_set_thumbnail.py
+    |       |   |   |   set_sticker_set_title.py
+    |       |   |   |   set_user_emoji_status.py
+    |       |   |   |   set_webhook.py
+    |       |   |   |   stop_message_live_location.py
+    |       |   |   |   stop_poll.py
+    |       |   |   |   transfer_business_account_stars.py
+    |       |   |   |   transfer_gift.py
+    |       |   |   |   unban_chat_member.py
+    |       |   |   |   unban_chat_sender_chat.py
+    |       |   |   |   unhide_general_forum_topic.py
+    |       |   |   |   unpin_all_chat_messages.py
+    |       |   |   |   unpin_all_forum_topic_messages.py
+    |       |   |   |   unpin_all_general_forum_topic_messages.py
+    |       |   |   |   unpin_chat_message.py
+    |       |   |   |   upgrade_gift.py
+    |       |   |   |   upload_sticker_file.py
+    |       |   |   |   verify_chat.py
+    |       |   |   |   verify_user.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           add_sticker_to_set.cpython-310.pyc
+    |       |   |           answer_callback_query.cpython-310.pyc
+    |       |   |           answer_inline_query.cpython-310.pyc
+    |       |   |           answer_pre_checkout_query.cpython-310.pyc
+    |       |   |           answer_shipping_query.cpython-310.pyc
+    |       |   |           answer_web_app_query.cpython-310.pyc
+    |       |   |           approve_chat_join_request.cpython-310.pyc
+    |       |   |           approve_suggested_post.cpython-310.pyc
+    |       |   |           ban_chat_member.cpython-310.pyc
+    |       |   |           ban_chat_sender_chat.cpython-310.pyc
+    |       |   |           base.cpython-310.pyc
+    |       |   |           close.cpython-310.pyc
+    |       |   |           close_forum_topic.cpython-310.pyc
+    |       |   |           close_general_forum_topic.cpython-310.pyc
+    |       |   |           convert_gift_to_stars.cpython-310.pyc
+    |       |   |           copy_message.cpython-310.pyc
+    |       |   |           copy_messages.cpython-310.pyc
+    |       |   |           create_chat_invite_link.cpython-310.pyc
+    |       |   |           create_chat_subscription_invite_link.cpython-310.pyc
+    |       |   |           create_forum_topic.cpython-310.pyc
+    |       |   |           create_invoice_link.cpython-310.pyc
+    |       |   |           create_new_sticker_set.cpython-310.pyc
+    |       |   |           decline_chat_join_request.cpython-310.pyc
+    |       |   |           decline_suggested_post.cpython-310.pyc
+    |       |   |           delete_business_messages.cpython-310.pyc
+    |       |   |           delete_chat_photo.cpython-310.pyc
+    |       |   |           delete_chat_sticker_set.cpython-310.pyc
+    |       |   |           delete_forum_topic.cpython-310.pyc
+    |       |   |           delete_message.cpython-310.pyc
+    |       |   |           delete_messages.cpython-310.pyc
+    |       |   |           delete_my_commands.cpython-310.pyc
+    |       |   |           delete_sticker_from_set.cpython-310.pyc
+    |       |   |           delete_sticker_set.cpython-310.pyc
+    |       |   |           delete_story.cpython-310.pyc
+    |       |   |           delete_webhook.cpython-310.pyc
+    |       |   |           edit_chat_invite_link.cpython-310.pyc
+    |       |   |           edit_chat_subscription_invite_link.cpython-310.pyc
+    |       |   |           edit_forum_topic.cpython-310.pyc
+    |       |   |           edit_general_forum_topic.cpython-310.pyc
+    |       |   |           edit_message_caption.cpython-310.pyc
+    |       |   |           edit_message_checklist.cpython-310.pyc
+    |       |   |           edit_message_live_location.cpython-310.pyc
+    |       |   |           edit_message_media.cpython-310.pyc
+    |       |   |           edit_message_reply_markup.cpython-310.pyc
+    |       |   |           edit_message_text.cpython-310.pyc
+    |       |   |           edit_story.cpython-310.pyc
+    |       |   |           edit_user_star_subscription.cpython-310.pyc
+    |       |   |           export_chat_invite_link.cpython-310.pyc
+    |       |   |           forward_message.cpython-310.pyc
+    |       |   |           forward_messages.cpython-310.pyc
+    |       |   |           get_available_gifts.cpython-310.pyc
+    |       |   |           get_business_account_gifts.cpython-310.pyc
+    |       |   |           get_business_account_star_balance.cpython-310.pyc
+    |       |   |           get_business_connection.cpython-310.pyc
+    |       |   |           get_chat.cpython-310.pyc
+    |       |   |           get_chat_administrators.cpython-310.pyc
+    |       |   |           get_chat_gifts.cpython-310.pyc
+    |       |   |           get_chat_member.cpython-310.pyc
+    |       |   |           get_chat_member_count.cpython-310.pyc
+    |       |   |           get_chat_menu_button.cpython-310.pyc
+    |       |   |           get_custom_emoji_stickers.cpython-310.pyc
+    |       |   |           get_file.cpython-310.pyc
+    |       |   |           get_forum_topic_icon_stickers.cpython-310.pyc
+    |       |   |           get_game_high_scores.cpython-310.pyc
+    |       |   |           get_me.cpython-310.pyc
+    |       |   |           get_my_commands.cpython-310.pyc
+    |       |   |           get_my_default_administrator_rights.cpython-310.pyc
+    |       |   |           get_my_description.cpython-310.pyc
+    |       |   |           get_my_name.cpython-310.pyc
+    |       |   |           get_my_short_description.cpython-310.pyc
+    |       |   |           get_my_star_balance.cpython-310.pyc
+    |       |   |           get_star_transactions.cpython-310.pyc
+    |       |   |           get_sticker_set.cpython-310.pyc
+    |       |   |           get_updates.cpython-310.pyc
+    |       |   |           get_user_chat_boosts.cpython-310.pyc
+    |       |   |           get_user_gifts.cpython-310.pyc
+    |       |   |           get_user_profile_audios.cpython-310.pyc
+    |       |   |           get_user_profile_photos.cpython-310.pyc
+    |       |   |           get_webhook_info.cpython-310.pyc
+    |       |   |           gift_premium_subscription.cpython-310.pyc
+    |       |   |           hide_general_forum_topic.cpython-310.pyc
+    |       |   |           leave_chat.cpython-310.pyc
+    |       |   |           log_out.cpython-310.pyc
+    |       |   |           pin_chat_message.cpython-310.pyc
+    |       |   |           post_story.cpython-310.pyc
+    |       |   |           promote_chat_member.cpython-310.pyc
+    |       |   |           read_business_message.cpython-310.pyc
+    |       |   |           refund_star_payment.cpython-310.pyc
+    |       |   |           remove_business_account_profile_photo.cpython-310.pyc
+    |       |   |           remove_chat_verification.cpython-310.pyc
+    |       |   |           remove_my_profile_photo.cpython-310.pyc
+    |       |   |           remove_user_verification.cpython-310.pyc
+    |       |   |           reopen_forum_topic.cpython-310.pyc
+    |       |   |           reopen_general_forum_topic.cpython-310.pyc
+    |       |   |           replace_sticker_in_set.cpython-310.pyc
+    |       |   |           repost_story.cpython-310.pyc
+    |       |   |           restrict_chat_member.cpython-310.pyc
+    |       |   |           revoke_chat_invite_link.cpython-310.pyc
+    |       |   |           save_prepared_inline_message.cpython-310.pyc
+    |       |   |           send_animation.cpython-310.pyc
+    |       |   |           send_audio.cpython-310.pyc
+    |       |   |           send_chat_action.cpython-310.pyc
+    |       |   |           send_checklist.cpython-310.pyc
+    |       |   |           send_contact.cpython-310.pyc
+    |       |   |           send_dice.cpython-310.pyc
+    |       |   |           send_document.cpython-310.pyc
+    |       |   |           send_game.cpython-310.pyc
+    |       |   |           send_gift.cpython-310.pyc
+    |       |   |           send_invoice.cpython-310.pyc
+    |       |   |           send_location.cpython-310.pyc
+    |       |   |           send_media_group.cpython-310.pyc
+    |       |   |           send_message.cpython-310.pyc
+    |       |   |           send_message_draft.cpython-310.pyc
+    |       |   |           send_paid_media.cpython-310.pyc
+    |       |   |           send_photo.cpython-310.pyc
+    |       |   |           send_poll.cpython-310.pyc
+    |       |   |           send_sticker.cpython-310.pyc
+    |       |   |           send_venue.cpython-310.pyc
+    |       |   |           send_video.cpython-310.pyc
+    |       |   |           send_video_note.cpython-310.pyc
+    |       |   |           send_voice.cpython-310.pyc
+    |       |   |           set_business_account_bio.cpython-310.pyc
+    |       |   |           set_business_account_gift_settings.cpython-310.pyc
+    |       |   |           set_business_account_name.cpython-310.pyc
+    |       |   |           set_business_account_profile_photo.cpython-310.pyc
+    |       |   |           set_business_account_username.cpython-310.pyc
+    |       |   |           set_chat_administrator_custom_title.cpython-310.pyc
+    |       |   |           set_chat_description.cpython-310.pyc
+    |       |   |           set_chat_member_tag.cpython-310.pyc
+    |       |   |           set_chat_menu_button.cpython-310.pyc
+    |       |   |           set_chat_permissions.cpython-310.pyc
+    |       |   |           set_chat_photo.cpython-310.pyc
+    |       |   |           set_chat_sticker_set.cpython-310.pyc
+    |       |   |           set_chat_title.cpython-310.pyc
+    |       |   |           set_custom_emoji_sticker_set_thumbnail.cpython-310.pyc
+    |       |   |           set_game_score.cpython-310.pyc
+    |       |   |           set_message_reaction.cpython-310.pyc
+    |       |   |           set_my_commands.cpython-310.pyc
+    |       |   |           set_my_default_administrator_rights.cpython-310.pyc
+    |       |   |           set_my_description.cpython-310.pyc
+    |       |   |           set_my_name.cpython-310.pyc
+    |       |   |           set_my_profile_photo.cpython-310.pyc
+    |       |   |           set_my_short_description.cpython-310.pyc
+    |       |   |           set_passport_data_errors.cpython-310.pyc
+    |       |   |           set_sticker_emoji_list.cpython-310.pyc
+    |       |   |           set_sticker_keywords.cpython-310.pyc
+    |       |   |           set_sticker_mask_position.cpython-310.pyc
+    |       |   |           set_sticker_position_in_set.cpython-310.pyc
+    |       |   |           set_sticker_set_thumbnail.cpython-310.pyc
+    |       |   |           set_sticker_set_title.cpython-310.pyc
+    |       |   |           set_user_emoji_status.cpython-310.pyc
+    |       |   |           set_webhook.cpython-310.pyc
+    |       |   |           stop_message_live_location.cpython-310.pyc
+    |       |   |           stop_poll.cpython-310.pyc
+    |       |   |           transfer_business_account_stars.cpython-310.pyc
+    |       |   |           transfer_gift.cpython-310.pyc
+    |       |   |           unban_chat_member.cpython-310.pyc
+    |       |   |           unban_chat_sender_chat.cpython-310.pyc
+    |       |   |           unhide_general_forum_topic.cpython-310.pyc
+    |       |   |           unpin_all_chat_messages.cpython-310.pyc
+    |       |   |           unpin_all_forum_topic_messages.cpython-310.pyc
+    |       |   |           unpin_all_general_forum_topic_messages.cpython-310.pyc
+    |       |   |           unpin_chat_message.cpython-310.pyc
+    |       |   |           upgrade_gift.cpython-310.pyc
+    |       |   |           upload_sticker_file.cpython-310.pyc
+    |       |   |           verify_chat.cpython-310.pyc
+    |       |   |           verify_user.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---types
+    |       |   |   |   accepted_gift_types.py
+    |       |   |   |   affiliate_info.py
+    |       |   |   |   animation.py
+    |       |   |   |   audio.py
+    |       |   |   |   background_fill.py
+    |       |   |   |   background_fill_freeform_gradient.py
+    |       |   |   |   background_fill_gradient.py
+    |       |   |   |   background_fill_solid.py
+    |       |   |   |   background_fill_union.py
+    |       |   |   |   background_type.py
+    |       |   |   |   background_type_chat_theme.py
+    |       |   |   |   background_type_fill.py
+    |       |   |   |   background_type_pattern.py
+    |       |   |   |   background_type_union.py
+    |       |   |   |   background_type_wallpaper.py
+    |       |   |   |   base.py
+    |       |   |   |   birthdate.py
+    |       |   |   |   bot_command.py
+    |       |   |   |   bot_command_scope.py
+    |       |   |   |   bot_command_scope_all_chat_administrators.py
+    |       |   |   |   bot_command_scope_all_group_chats.py
+    |       |   |   |   bot_command_scope_all_private_chats.py
+    |       |   |   |   bot_command_scope_chat.py
+    |       |   |   |   bot_command_scope_chat_administrators.py
+    |       |   |   |   bot_command_scope_chat_member.py
+    |       |   |   |   bot_command_scope_default.py
+    |       |   |   |   bot_command_scope_union.py
+    |       |   |   |   bot_description.py
+    |       |   |   |   bot_name.py
+    |       |   |   |   bot_short_description.py
+    |       |   |   |   business_bot_rights.py
+    |       |   |   |   business_connection.py
+    |       |   |   |   business_intro.py
+    |       |   |   |   business_location.py
+    |       |   |   |   business_messages_deleted.py
+    |       |   |   |   business_opening_hours.py
+    |       |   |   |   business_opening_hours_interval.py
+    |       |   |   |   callback_game.py
+    |       |   |   |   callback_query.py
+    |       |   |   |   chat.py
+    |       |   |   |   chat_administrator_rights.py
+    |       |   |   |   chat_background.py
+    |       |   |   |   chat_boost.py
+    |       |   |   |   chat_boost_added.py
+    |       |   |   |   chat_boost_removed.py
+    |       |   |   |   chat_boost_source.py
+    |       |   |   |   chat_boost_source_gift_code.py
+    |       |   |   |   chat_boost_source_giveaway.py
+    |       |   |   |   chat_boost_source_premium.py
+    |       |   |   |   chat_boost_source_union.py
+    |       |   |   |   chat_boost_updated.py
+    |       |   |   |   chat_full_info.py
+    |       |   |   |   chat_id_union.py
+    |       |   |   |   chat_invite_link.py
+    |       |   |   |   chat_join_request.py
+    |       |   |   |   chat_location.py
+    |       |   |   |   chat_member.py
+    |       |   |   |   chat_member_administrator.py
+    |       |   |   |   chat_member_banned.py
+    |       |   |   |   chat_member_left.py
+    |       |   |   |   chat_member_member.py
+    |       |   |   |   chat_member_owner.py
+    |       |   |   |   chat_member_restricted.py
+    |       |   |   |   chat_member_union.py
+    |       |   |   |   chat_member_updated.py
+    |       |   |   |   chat_owner_changed.py
+    |       |   |   |   chat_owner_left.py
+    |       |   |   |   chat_permissions.py
+    |       |   |   |   chat_photo.py
+    |       |   |   |   chat_shared.py
+    |       |   |   |   checklist.py
+    |       |   |   |   checklist_task.py
+    |       |   |   |   checklist_tasks_added.py
+    |       |   |   |   checklist_tasks_done.py
+    |       |   |   |   chosen_inline_result.py
+    |       |   |   |   contact.py
+    |       |   |   |   copy_text_button.py
+    |       |   |   |   custom.py
+    |       |   |   |   date_time_union.py
+    |       |   |   |   dice.py
+    |       |   |   |   direct_messages_topic.py
+    |       |   |   |   direct_message_price_changed.py
+    |       |   |   |   document.py
+    |       |   |   |   downloadable.py
+    |       |   |   |   encrypted_credentials.py
+    |       |   |   |   encrypted_passport_element.py
+    |       |   |   |   error_event.py
+    |       |   |   |   external_reply_info.py
+    |       |   |   |   file.py
+    |       |   |   |   force_reply.py
+    |       |   |   |   forum_topic.py
+    |       |   |   |   forum_topic_closed.py
+    |       |   |   |   forum_topic_created.py
+    |       |   |   |   forum_topic_edited.py
+    |       |   |   |   forum_topic_reopened.py
+    |       |   |   |   game.py
+    |       |   |   |   game_high_score.py
+    |       |   |   |   general_forum_topic_hidden.py
+    |       |   |   |   general_forum_topic_unhidden.py
+    |       |   |   |   gift.py
+    |       |   |   |   gifts.py
+    |       |   |   |   gift_background.py
+    |       |   |   |   gift_info.py
+    |       |   |   |   giveaway.py
+    |       |   |   |   giveaway_completed.py
+    |       |   |   |   giveaway_created.py
+    |       |   |   |   giveaway_winners.py
+    |       |   |   |   inaccessible_message.py
+    |       |   |   |   inline_keyboard_button.py
+    |       |   |   |   inline_keyboard_markup.py
+    |       |   |   |   inline_query.py
+    |       |   |   |   inline_query_result.py
+    |       |   |   |   inline_query_results_button.py
+    |       |   |   |   inline_query_result_article.py
+    |       |   |   |   inline_query_result_audio.py
+    |       |   |   |   inline_query_result_cached_audio.py
+    |       |   |   |   inline_query_result_cached_document.py
+    |       |   |   |   inline_query_result_cached_gif.py
+    |       |   |   |   inline_query_result_cached_mpeg4_gif.py
+    |       |   |   |   inline_query_result_cached_photo.py
+    |       |   |   |   inline_query_result_cached_sticker.py
+    |       |   |   |   inline_query_result_cached_video.py
+    |       |   |   |   inline_query_result_cached_voice.py
+    |       |   |   |   inline_query_result_contact.py
+    |       |   |   |   inline_query_result_document.py
+    |       |   |   |   inline_query_result_game.py
+    |       |   |   |   inline_query_result_gif.py
+    |       |   |   |   inline_query_result_location.py
+    |       |   |   |   inline_query_result_mpeg4_gif.py
+    |       |   |   |   inline_query_result_photo.py
+    |       |   |   |   inline_query_result_union.py
+    |       |   |   |   inline_query_result_venue.py
+    |       |   |   |   inline_query_result_video.py
+    |       |   |   |   inline_query_result_voice.py
+    |       |   |   |   input_checklist.py
+    |       |   |   |   input_checklist_task.py
+    |       |   |   |   input_contact_message_content.py
+    |       |   |   |   input_file.py
+    |       |   |   |   input_file_union.py
+    |       |   |   |   input_invoice_message_content.py
+    |       |   |   |   input_location_message_content.py
+    |       |   |   |   input_media.py
+    |       |   |   |   input_media_animation.py
+    |       |   |   |   input_media_audio.py
+    |       |   |   |   input_media_document.py
+    |       |   |   |   input_media_photo.py
+    |       |   |   |   input_media_union.py
+    |       |   |   |   input_media_video.py
+    |       |   |   |   input_message_content.py
+    |       |   |   |   input_message_content_union.py
+    |       |   |   |   input_paid_media.py
+    |       |   |   |   input_paid_media_photo.py
+    |       |   |   |   input_paid_media_union.py
+    |       |   |   |   input_paid_media_video.py
+    |       |   |   |   input_poll_option.py
+    |       |   |   |   input_poll_option_union.py
+    |       |   |   |   input_profile_photo.py
+    |       |   |   |   input_profile_photo_animated.py
+    |       |   |   |   input_profile_photo_static.py
+    |       |   |   |   input_profile_photo_union.py
+    |       |   |   |   input_sticker.py
+    |       |   |   |   input_story_content.py
+    |       |   |   |   input_story_content_photo.py
+    |       |   |   |   input_story_content_union.py
+    |       |   |   |   input_story_content_video.py
+    |       |   |   |   input_text_message_content.py
+    |       |   |   |   input_venue_message_content.py
+    |       |   |   |   invoice.py
+    |       |   |   |   keyboard_button.py
+    |       |   |   |   keyboard_button_poll_type.py
+    |       |   |   |   keyboard_button_request_chat.py
+    |       |   |   |   keyboard_button_request_user.py
+    |       |   |   |   keyboard_button_request_users.py
+    |       |   |   |   labeled_price.py
+    |       |   |   |   link_preview_options.py
+    |       |   |   |   location.py
+    |       |   |   |   location_address.py
+    |       |   |   |   login_url.py
+    |       |   |   |   mask_position.py
+    |       |   |   |   maybe_inaccessible_message.py
+    |       |   |   |   maybe_inaccessible_message_union.py
+    |       |   |   |   media_union.py
+    |       |   |   |   menu_button.py
+    |       |   |   |   menu_button_commands.py
+    |       |   |   |   menu_button_default.py
+    |       |   |   |   menu_button_union.py
+    |       |   |   |   menu_button_web_app.py
+    |       |   |   |   message.py
+    |       |   |   |   message_auto_delete_timer_changed.py
+    |       |   |   |   message_entity.py
+    |       |   |   |   message_id.py
+    |       |   |   |   message_origin.py
+    |       |   |   |   message_origin_channel.py
+    |       |   |   |   message_origin_chat.py
+    |       |   |   |   message_origin_hidden_user.py
+    |       |   |   |   message_origin_union.py
+    |       |   |   |   message_origin_user.py
+    |       |   |   |   message_reaction_count_updated.py
+    |       |   |   |   message_reaction_updated.py
+    |       |   |   |   order_info.py
+    |       |   |   |   owned_gift.py
+    |       |   |   |   owned_gifts.py
+    |       |   |   |   owned_gift_regular.py
+    |       |   |   |   owned_gift_union.py
+    |       |   |   |   owned_gift_unique.py
+    |       |   |   |   paid_media.py
+    |       |   |   |   paid_media_info.py
+    |       |   |   |   paid_media_photo.py
+    |       |   |   |   paid_media_preview.py
+    |       |   |   |   paid_media_purchased.py
+    |       |   |   |   paid_media_union.py
+    |       |   |   |   paid_media_video.py
+    |       |   |   |   paid_message_price_changed.py
+    |       |   |   |   passport_data.py
+    |       |   |   |   passport_element_error.py
+    |       |   |   |   passport_element_error_data_field.py
+    |       |   |   |   passport_element_error_file.py
+    |       |   |   |   passport_element_error_files.py
+    |       |   |   |   passport_element_error_front_side.py
+    |       |   |   |   passport_element_error_reverse_side.py
+    |       |   |   |   passport_element_error_selfie.py
+    |       |   |   |   passport_element_error_translation_file.py
+    |       |   |   |   passport_element_error_translation_files.py
+    |       |   |   |   passport_element_error_union.py
+    |       |   |   |   passport_element_error_unspecified.py
+    |       |   |   |   passport_file.py
+    |       |   |   |   photo_size.py
+    |       |   |   |   poll.py
+    |       |   |   |   poll_answer.py
+    |       |   |   |   poll_option.py
+    |       |   |   |   prepared_inline_message.py
+    |       |   |   |   pre_checkout_query.py
+    |       |   |   |   proximity_alert_triggered.py
+    |       |   |   |   reaction_count.py
+    |       |   |   |   reaction_type.py
+    |       |   |   |   reaction_type_custom_emoji.py
+    |       |   |   |   reaction_type_emoji.py
+    |       |   |   |   reaction_type_paid.py
+    |       |   |   |   reaction_type_union.py
+    |       |   |   |   refunded_payment.py
+    |       |   |   |   reply_keyboard_markup.py
+    |       |   |   |   reply_keyboard_remove.py
+    |       |   |   |   reply_markup_union.py
+    |       |   |   |   reply_parameters.py
+    |       |   |   |   response_parameters.py
+    |       |   |   |   result_chat_member_union.py
+    |       |   |   |   result_menu_button_union.py
+    |       |   |   |   revenue_withdrawal_state.py
+    |       |   |   |   revenue_withdrawal_state_failed.py
+    |       |   |   |   revenue_withdrawal_state_pending.py
+    |       |   |   |   revenue_withdrawal_state_succeeded.py
+    |       |   |   |   revenue_withdrawal_state_union.py
+    |       |   |   |   sent_web_app_message.py
+    |       |   |   |   shared_user.py
+    |       |   |   |   shipping_address.py
+    |       |   |   |   shipping_option.py
+    |       |   |   |   shipping_query.py
+    |       |   |   |   star_amount.py
+    |       |   |   |   star_transaction.py
+    |       |   |   |   star_transactions.py
+    |       |   |   |   sticker.py
+    |       |   |   |   sticker_set.py
+    |       |   |   |   story.py
+    |       |   |   |   story_area.py
+    |       |   |   |   story_area_position.py
+    |       |   |   |   story_area_type.py
+    |       |   |   |   story_area_type_link.py
+    |       |   |   |   story_area_type_location.py
+    |       |   |   |   story_area_type_suggested_reaction.py
+    |       |   |   |   story_area_type_union.py
+    |       |   |   |   story_area_type_unique_gift.py
+    |       |   |   |   story_area_type_weather.py
+    |       |   |   |   successful_payment.py
+    |       |   |   |   suggested_post_approval_failed.py
+    |       |   |   |   suggested_post_approved.py
+    |       |   |   |   suggested_post_declined.py
+    |       |   |   |   suggested_post_info.py
+    |       |   |   |   suggested_post_paid.py
+    |       |   |   |   suggested_post_parameters.py
+    |       |   |   |   suggested_post_price.py
+    |       |   |   |   suggested_post_refunded.py
+    |       |   |   |   switch_inline_query_chosen_chat.py
+    |       |   |   |   text_quote.py
+    |       |   |   |   transaction_partner.py
+    |       |   |   |   transaction_partner_affiliate_program.py
+    |       |   |   |   transaction_partner_chat.py
+    |       |   |   |   transaction_partner_fragment.py
+    |       |   |   |   transaction_partner_other.py
+    |       |   |   |   transaction_partner_telegram_ads.py
+    |       |   |   |   transaction_partner_telegram_api.py
+    |       |   |   |   transaction_partner_union.py
+    |       |   |   |   transaction_partner_user.py
+    |       |   |   |   unique_gift.py
+    |       |   |   |   unique_gift_backdrop.py
+    |       |   |   |   unique_gift_backdrop_colors.py
+    |       |   |   |   unique_gift_colors.py
+    |       |   |   |   unique_gift_info.py
+    |       |   |   |   unique_gift_model.py
+    |       |   |   |   unique_gift_symbol.py
+    |       |   |   |   update.py
+    |       |   |   |   user.py
+    |       |   |   |   users_shared.py
+    |       |   |   |   user_chat_boosts.py
+    |       |   |   |   user_profile_audios.py
+    |       |   |   |   user_profile_photos.py
+    |       |   |   |   user_rating.py
+    |       |   |   |   user_shared.py
+    |       |   |   |   venue.py
+    |       |   |   |   video.py
+    |       |   |   |   video_chat_ended.py
+    |       |   |   |   video_chat_participants_invited.py
+    |       |   |   |   video_chat_scheduled.py
+    |       |   |   |   video_chat_started.py
+    |       |   |   |   video_note.py
+    |       |   |   |   video_quality.py
+    |       |   |   |   voice.py
+    |       |   |   |   webhook_info.py
+    |       |   |   |   web_app_data.py
+    |       |   |   |   web_app_info.py
+    |       |   |   |   write_access_allowed.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           accepted_gift_types.cpython-310.pyc
+    |       |   |           affiliate_info.cpython-310.pyc
+    |       |   |           animation.cpython-310.pyc
+    |       |   |           audio.cpython-310.pyc
+    |       |   |           background_fill.cpython-310.pyc
+    |       |   |           background_fill_freeform_gradient.cpython-310.pyc
+    |       |   |           background_fill_gradient.cpython-310.pyc
+    |       |   |           background_fill_solid.cpython-310.pyc
+    |       |   |           background_fill_union.cpython-310.pyc
+    |       |   |           background_type.cpython-310.pyc
+    |       |   |           background_type_chat_theme.cpython-310.pyc
+    |       |   |           background_type_fill.cpython-310.pyc
+    |       |   |           background_type_pattern.cpython-310.pyc
+    |       |   |           background_type_union.cpython-310.pyc
+    |       |   |           background_type_wallpaper.cpython-310.pyc
+    |       |   |           base.cpython-310.pyc
+    |       |   |           birthdate.cpython-310.pyc
+    |       |   |           bot_command.cpython-310.pyc
+    |       |   |           bot_command_scope.cpython-310.pyc
+    |       |   |           bot_command_scope_all_chat_administrators.cpython-310.pyc
+    |       |   |           bot_command_scope_all_group_chats.cpython-310.pyc
+    |       |   |           bot_command_scope_all_private_chats.cpython-310.pyc
+    |       |   |           bot_command_scope_chat.cpython-310.pyc
+    |       |   |           bot_command_scope_chat_administrators.cpython-310.pyc
+    |       |   |           bot_command_scope_chat_member.cpython-310.pyc
+    |       |   |           bot_command_scope_default.cpython-310.pyc
+    |       |   |           bot_command_scope_union.cpython-310.pyc
+    |       |   |           bot_description.cpython-310.pyc
+    |       |   |           bot_name.cpython-310.pyc
+    |       |   |           bot_short_description.cpython-310.pyc
+    |       |   |           business_bot_rights.cpython-310.pyc
+    |       |   |           business_connection.cpython-310.pyc
+    |       |   |           business_intro.cpython-310.pyc
+    |       |   |           business_location.cpython-310.pyc
+    |       |   |           business_messages_deleted.cpython-310.pyc
+    |       |   |           business_opening_hours.cpython-310.pyc
+    |       |   |           business_opening_hours_interval.cpython-310.pyc
+    |       |   |           callback_game.cpython-310.pyc
+    |       |   |           callback_query.cpython-310.pyc
+    |       |   |           chat.cpython-310.pyc
+    |       |   |           chat_administrator_rights.cpython-310.pyc
+    |       |   |           chat_background.cpython-310.pyc
+    |       |   |           chat_boost.cpython-310.pyc
+    |       |   |           chat_boost_added.cpython-310.pyc
+    |       |   |           chat_boost_removed.cpython-310.pyc
+    |       |   |           chat_boost_source.cpython-310.pyc
+    |       |   |           chat_boost_source_gift_code.cpython-310.pyc
+    |       |   |           chat_boost_source_giveaway.cpython-310.pyc
+    |       |   |           chat_boost_source_premium.cpython-310.pyc
+    |       |   |           chat_boost_source_union.cpython-310.pyc
+    |       |   |           chat_boost_updated.cpython-310.pyc
+    |       |   |           chat_full_info.cpython-310.pyc
+    |       |   |           chat_id_union.cpython-310.pyc
+    |       |   |           chat_invite_link.cpython-310.pyc
+    |       |   |           chat_join_request.cpython-310.pyc
+    |       |   |           chat_location.cpython-310.pyc
+    |       |   |           chat_member.cpython-310.pyc
+    |       |   |           chat_member_administrator.cpython-310.pyc
+    |       |   |           chat_member_banned.cpython-310.pyc
+    |       |   |           chat_member_left.cpython-310.pyc
+    |       |   |           chat_member_member.cpython-310.pyc
+    |       |   |           chat_member_owner.cpython-310.pyc
+    |       |   |           chat_member_restricted.cpython-310.pyc
+    |       |   |           chat_member_union.cpython-310.pyc
+    |       |   |           chat_member_updated.cpython-310.pyc
+    |       |   |           chat_owner_changed.cpython-310.pyc
+    |       |   |           chat_owner_left.cpython-310.pyc
+    |       |   |           chat_permissions.cpython-310.pyc
+    |       |   |           chat_photo.cpython-310.pyc
+    |       |   |           chat_shared.cpython-310.pyc
+    |       |   |           checklist.cpython-310.pyc
+    |       |   |           checklist_task.cpython-310.pyc
+    |       |   |           checklist_tasks_added.cpython-310.pyc
+    |       |   |           checklist_tasks_done.cpython-310.pyc
+    |       |   |           chosen_inline_result.cpython-310.pyc
+    |       |   |           contact.cpython-310.pyc
+    |       |   |           copy_text_button.cpython-310.pyc
+    |       |   |           custom.cpython-310.pyc
+    |       |   |           date_time_union.cpython-310.pyc
+    |       |   |           dice.cpython-310.pyc
+    |       |   |           direct_messages_topic.cpython-310.pyc
+    |       |   |           direct_message_price_changed.cpython-310.pyc
+    |       |   |           document.cpython-310.pyc
+    |       |   |           downloadable.cpython-310.pyc
+    |       |   |           encrypted_credentials.cpython-310.pyc
+    |       |   |           encrypted_passport_element.cpython-310.pyc
+    |       |   |           error_event.cpython-310.pyc
+    |       |   |           external_reply_info.cpython-310.pyc
+    |       |   |           file.cpython-310.pyc
+    |       |   |           force_reply.cpython-310.pyc
+    |       |   |           forum_topic.cpython-310.pyc
+    |       |   |           forum_topic_closed.cpython-310.pyc
+    |       |   |           forum_topic_created.cpython-310.pyc
+    |       |   |           forum_topic_edited.cpython-310.pyc
+    |       |   |           forum_topic_reopened.cpython-310.pyc
+    |       |   |           game.cpython-310.pyc
+    |       |   |           game_high_score.cpython-310.pyc
+    |       |   |           general_forum_topic_hidden.cpython-310.pyc
+    |       |   |           general_forum_topic_unhidden.cpython-310.pyc
+    |       |   |           gift.cpython-310.pyc
+    |       |   |           gifts.cpython-310.pyc
+    |       |   |           gift_background.cpython-310.pyc
+    |       |   |           gift_info.cpython-310.pyc
+    |       |   |           giveaway.cpython-310.pyc
+    |       |   |           giveaway_completed.cpython-310.pyc
+    |       |   |           giveaway_created.cpython-310.pyc
+    |       |   |           giveaway_winners.cpython-310.pyc
+    |       |   |           inaccessible_message.cpython-310.pyc
+    |       |   |           inline_keyboard_button.cpython-310.pyc
+    |       |   |           inline_keyboard_markup.cpython-310.pyc
+    |       |   |           inline_query.cpython-310.pyc
+    |       |   |           inline_query_result.cpython-310.pyc
+    |       |   |           inline_query_results_button.cpython-310.pyc
+    |       |   |           inline_query_result_article.cpython-310.pyc
+    |       |   |           inline_query_result_audio.cpython-310.pyc
+    |       |   |           inline_query_result_cached_audio.cpython-310.pyc
+    |       |   |           inline_query_result_cached_document.cpython-310.pyc
+    |       |   |           inline_query_result_cached_gif.cpython-310.pyc
+    |       |   |           inline_query_result_cached_mpeg4_gif.cpython-310.pyc
+    |       |   |           inline_query_result_cached_photo.cpython-310.pyc
+    |       |   |           inline_query_result_cached_sticker.cpython-310.pyc
+    |       |   |           inline_query_result_cached_video.cpython-310.pyc
+    |       |   |           inline_query_result_cached_voice.cpython-310.pyc
+    |       |   |           inline_query_result_contact.cpython-310.pyc
+    |       |   |           inline_query_result_document.cpython-310.pyc
+    |       |   |           inline_query_result_game.cpython-310.pyc
+    |       |   |           inline_query_result_gif.cpython-310.pyc
+    |       |   |           inline_query_result_location.cpython-310.pyc
+    |       |   |           inline_query_result_mpeg4_gif.cpython-310.pyc
+    |       |   |           inline_query_result_photo.cpython-310.pyc
+    |       |   |           inline_query_result_union.cpython-310.pyc
+    |       |   |           inline_query_result_venue.cpython-310.pyc
+    |       |   |           inline_query_result_video.cpython-310.pyc
+    |       |   |           inline_query_result_voice.cpython-310.pyc
+    |       |   |           input_checklist.cpython-310.pyc
+    |       |   |           input_checklist_task.cpython-310.pyc
+    |       |   |           input_contact_message_content.cpython-310.pyc
+    |       |   |           input_file.cpython-310.pyc
+    |       |   |           input_file_union.cpython-310.pyc
+    |       |   |           input_invoice_message_content.cpython-310.pyc
+    |       |   |           input_location_message_content.cpython-310.pyc
+    |       |   |           input_media.cpython-310.pyc
+    |       |   |           input_media_animation.cpython-310.pyc
+    |       |   |           input_media_audio.cpython-310.pyc
+    |       |   |           input_media_document.cpython-310.pyc
+    |       |   |           input_media_photo.cpython-310.pyc
+    |       |   |           input_media_union.cpython-310.pyc
+    |       |   |           input_media_video.cpython-310.pyc
+    |       |   |           input_message_content.cpython-310.pyc
+    |       |   |           input_message_content_union.cpython-310.pyc
+    |       |   |           input_paid_media.cpython-310.pyc
+    |       |   |           input_paid_media_photo.cpython-310.pyc
+    |       |   |           input_paid_media_union.cpython-310.pyc
+    |       |   |           input_paid_media_video.cpython-310.pyc
+    |       |   |           input_poll_option.cpython-310.pyc
+    |       |   |           input_poll_option_union.cpython-310.pyc
+    |       |   |           input_profile_photo.cpython-310.pyc
+    |       |   |           input_profile_photo_animated.cpython-310.pyc
+    |       |   |           input_profile_photo_static.cpython-310.pyc
+    |       |   |           input_profile_photo_union.cpython-310.pyc
+    |       |   |           input_sticker.cpython-310.pyc
+    |       |   |           input_story_content.cpython-310.pyc
+    |       |   |           input_story_content_photo.cpython-310.pyc
+    |       |   |           input_story_content_union.cpython-310.pyc
+    |       |   |           input_story_content_video.cpython-310.pyc
+    |       |   |           input_text_message_content.cpython-310.pyc
+    |       |   |           input_venue_message_content.cpython-310.pyc
+    |       |   |           invoice.cpython-310.pyc
+    |       |   |           keyboard_button.cpython-310.pyc
+    |       |   |           keyboard_button_poll_type.cpython-310.pyc
+    |       |   |           keyboard_button_request_chat.cpython-310.pyc
+    |       |   |           keyboard_button_request_user.cpython-310.pyc
+    |       |   |           keyboard_button_request_users.cpython-310.pyc
+    |       |   |           labeled_price.cpython-310.pyc
+    |       |   |           link_preview_options.cpython-310.pyc
+    |       |   |           location.cpython-310.pyc
+    |       |   |           location_address.cpython-310.pyc
+    |       |   |           login_url.cpython-310.pyc
+    |       |   |           mask_position.cpython-310.pyc
+    |       |   |           maybe_inaccessible_message.cpython-310.pyc
+    |       |   |           maybe_inaccessible_message_union.cpython-310.pyc
+    |       |   |           media_union.cpython-310.pyc
+    |       |   |           menu_button.cpython-310.pyc
+    |       |   |           menu_button_commands.cpython-310.pyc
+    |       |   |           menu_button_default.cpython-310.pyc
+    |       |   |           menu_button_union.cpython-310.pyc
+    |       |   |           menu_button_web_app.cpython-310.pyc
+    |       |   |           message.cpython-310.pyc
+    |       |   |           message_auto_delete_timer_changed.cpython-310.pyc
+    |       |   |           message_entity.cpython-310.pyc
+    |       |   |           message_id.cpython-310.pyc
+    |       |   |           message_origin.cpython-310.pyc
+    |       |   |           message_origin_channel.cpython-310.pyc
+    |       |   |           message_origin_chat.cpython-310.pyc
+    |       |   |           message_origin_hidden_user.cpython-310.pyc
+    |       |   |           message_origin_union.cpython-310.pyc
+    |       |   |           message_origin_user.cpython-310.pyc
+    |       |   |           message_reaction_count_updated.cpython-310.pyc
+    |       |   |           message_reaction_updated.cpython-310.pyc
+    |       |   |           order_info.cpython-310.pyc
+    |       |   |           owned_gift.cpython-310.pyc
+    |       |   |           owned_gifts.cpython-310.pyc
+    |       |   |           owned_gift_regular.cpython-310.pyc
+    |       |   |           owned_gift_union.cpython-310.pyc
+    |       |   |           owned_gift_unique.cpython-310.pyc
+    |       |   |           paid_media.cpython-310.pyc
+    |       |   |           paid_media_info.cpython-310.pyc
+    |       |   |           paid_media_photo.cpython-310.pyc
+    |       |   |           paid_media_preview.cpython-310.pyc
+    |       |   |           paid_media_purchased.cpython-310.pyc
+    |       |   |           paid_media_union.cpython-310.pyc
+    |       |   |           paid_media_video.cpython-310.pyc
+    |       |   |           paid_message_price_changed.cpython-310.pyc
+    |       |   |           passport_data.cpython-310.pyc
+    |       |   |           passport_element_error.cpython-310.pyc
+    |       |   |           passport_element_error_data_field.cpython-310.pyc
+    |       |   |           passport_element_error_file.cpython-310.pyc
+    |       |   |           passport_element_error_files.cpython-310.pyc
+    |       |   |           passport_element_error_front_side.cpython-310.pyc
+    |       |   |           passport_element_error_reverse_side.cpython-310.pyc
+    |       |   |           passport_element_error_selfie.cpython-310.pyc
+    |       |   |           passport_element_error_translation_file.cpython-310.pyc
+    |       |   |           passport_element_error_translation_files.cpython-310.pyc
+    |       |   |           passport_element_error_union.cpython-310.pyc
+    |       |   |           passport_element_error_unspecified.cpython-310.pyc
+    |       |   |           passport_file.cpython-310.pyc
+    |       |   |           photo_size.cpython-310.pyc
+    |       |   |           poll.cpython-310.pyc
+    |       |   |           poll_answer.cpython-310.pyc
+    |       |   |           poll_option.cpython-310.pyc
+    |       |   |           prepared_inline_message.cpython-310.pyc
+    |       |   |           pre_checkout_query.cpython-310.pyc
+    |       |   |           proximity_alert_triggered.cpython-310.pyc
+    |       |   |           reaction_count.cpython-310.pyc
+    |       |   |           reaction_type.cpython-310.pyc
+    |       |   |           reaction_type_custom_emoji.cpython-310.pyc
+    |       |   |           reaction_type_emoji.cpython-310.pyc
+    |       |   |           reaction_type_paid.cpython-310.pyc
+    |       |   |           reaction_type_union.cpython-310.pyc
+    |       |   |           refunded_payment.cpython-310.pyc
+    |       |   |           reply_keyboard_markup.cpython-310.pyc
+    |       |   |           reply_keyboard_remove.cpython-310.pyc
+    |       |   |           reply_markup_union.cpython-310.pyc
+    |       |   |           reply_parameters.cpython-310.pyc
+    |       |   |           response_parameters.cpython-310.pyc
+    |       |   |           result_chat_member_union.cpython-310.pyc
+    |       |   |           result_menu_button_union.cpython-310.pyc
+    |       |   |           revenue_withdrawal_state.cpython-310.pyc
+    |       |   |           revenue_withdrawal_state_failed.cpython-310.pyc
+    |       |   |           revenue_withdrawal_state_pending.cpython-310.pyc
+    |       |   |           revenue_withdrawal_state_succeeded.cpython-310.pyc
+    |       |   |           revenue_withdrawal_state_union.cpython-310.pyc
+    |       |   |           sent_web_app_message.cpython-310.pyc
+    |       |   |           shared_user.cpython-310.pyc
+    |       |   |           shipping_address.cpython-310.pyc
+    |       |   |           shipping_option.cpython-310.pyc
+    |       |   |           shipping_query.cpython-310.pyc
+    |       |   |           star_amount.cpython-310.pyc
+    |       |   |           star_transaction.cpython-310.pyc
+    |       |   |           star_transactions.cpython-310.pyc
+    |       |   |           sticker.cpython-310.pyc
+    |       |   |           sticker_set.cpython-310.pyc
+    |       |   |           story.cpython-310.pyc
+    |       |   |           story_area.cpython-310.pyc
+    |       |   |           story_area_position.cpython-310.pyc
+    |       |   |           story_area_type.cpython-310.pyc
+    |       |   |           story_area_type_link.cpython-310.pyc
+    |       |   |           story_area_type_location.cpython-310.pyc
+    |       |   |           story_area_type_suggested_reaction.cpython-310.pyc
+    |       |   |           story_area_type_union.cpython-310.pyc
+    |       |   |           story_area_type_unique_gift.cpython-310.pyc
+    |       |   |           story_area_type_weather.cpython-310.pyc
+    |       |   |           successful_payment.cpython-310.pyc
+    |       |   |           suggested_post_approval_failed.cpython-310.pyc
+    |       |   |           suggested_post_approved.cpython-310.pyc
+    |       |   |           suggested_post_declined.cpython-310.pyc
+    |       |   |           suggested_post_info.cpython-310.pyc
+    |       |   |           suggested_post_paid.cpython-310.pyc
+    |       |   |           suggested_post_parameters.cpython-310.pyc
+    |       |   |           suggested_post_price.cpython-310.pyc
+    |       |   |           suggested_post_refunded.cpython-310.pyc
+    |       |   |           switch_inline_query_chosen_chat.cpython-310.pyc
+    |       |   |           text_quote.cpython-310.pyc
+    |       |   |           transaction_partner.cpython-310.pyc
+    |       |   |           transaction_partner_affiliate_program.cpython-310.pyc
+    |       |   |           transaction_partner_chat.cpython-310.pyc
+    |       |   |           transaction_partner_fragment.cpython-310.pyc
+    |       |   |           transaction_partner_other.cpython-310.pyc
+    |       |   |           transaction_partner_telegram_ads.cpython-310.pyc
+    |       |   |           transaction_partner_telegram_api.cpython-310.pyc
+    |       |   |           transaction_partner_union.cpython-310.pyc
+    |       |   |           transaction_partner_user.cpython-310.pyc
+    |       |   |           unique_gift.cpython-310.pyc
+    |       |   |           unique_gift_backdrop.cpython-310.pyc
+    |       |   |           unique_gift_backdrop_colors.cpython-310.pyc
+    |       |   |           unique_gift_colors.cpython-310.pyc
+    |       |   |           unique_gift_info.cpython-310.pyc
+    |       |   |           unique_gift_model.cpython-310.pyc
+    |       |   |           unique_gift_symbol.cpython-310.pyc
+    |       |   |           update.cpython-310.pyc
+    |       |   |           user.cpython-310.pyc
+    |       |   |           users_shared.cpython-310.pyc
+    |       |   |           user_chat_boosts.cpython-310.pyc
+    |       |   |           user_profile_audios.cpython-310.pyc
+    |       |   |           user_profile_photos.cpython-310.pyc
+    |       |   |           user_rating.cpython-310.pyc
+    |       |   |           user_shared.cpython-310.pyc
+    |       |   |           venue.cpython-310.pyc
+    |       |   |           video.cpython-310.pyc
+    |       |   |           video_chat_ended.cpython-310.pyc
+    |       |   |           video_chat_participants_invited.cpython-310.pyc
+    |       |   |           video_chat_scheduled.cpython-310.pyc
+    |       |   |           video_chat_started.cpython-310.pyc
+    |       |   |           video_note.cpython-310.pyc
+    |       |   |           video_quality.cpython-310.pyc
+    |       |   |           voice.cpython-310.pyc
+    |       |   |           webhook_info.cpython-310.pyc
+    |       |   |           web_app_data.cpython-310.pyc
+    |       |   |           web_app_info.cpython-310.pyc
+    |       |   |           write_access_allowed.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---utils
+    |       |   |   |   auth_widget.py
+    |       |   |   |   backoff.py
+    |       |   |   |   callback_answer.py
+    |       |   |   |   chat_action.py
+    |       |   |   |   chat_member.py
+    |       |   |   |   class_attrs_resolver.py
+    |       |   |   |   dataclass.py
+    |       |   |   |   deep_linking.py
+    |       |   |   |   formatting.py
+    |       |   |   |   keyboard.py
+    |       |   |   |   link.py
+    |       |   |   |   magic_filter.py
+    |       |   |   |   markdown.py
+    |       |   |   |   media_group.py
+    |       |   |   |   mixins.py
+    |       |   |   |   mypy_hacks.py
+    |       |   |   |   payload.py
+    |       |   |   |   serialization.py
+    |       |   |   |   text_decorations.py
+    |       |   |   |   token.py
+    |       |   |   |   warnings.py
+    |       |   |   |   web_app.py
+    |       |   |   |   web_app_signature.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |   +---i18n
+    |       |   |   |   |   context.py
+    |       |   |   |   |   core.py
+    |       |   |   |   |   lazy_proxy.py
+    |       |   |   |   |   middleware.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |           context.cpython-310.pyc
+    |       |   |   |           core.cpython-310.pyc
+    |       |   |   |           lazy_proxy.cpython-310.pyc
+    |       |   |   |           middleware.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
+    |       |   |           auth_widget.cpython-310.pyc
+    |       |   |           backoff.cpython-310.pyc
+    |       |   |           callback_answer.cpython-310.pyc
+    |       |   |           chat_action.cpython-310.pyc
+    |       |   |           chat_member.cpython-310.pyc
+    |       |   |           class_attrs_resolver.cpython-310.pyc
+    |       |   |           dataclass.cpython-310.pyc
+    |       |   |           deep_linking.cpython-310.pyc
+    |       |   |           formatting.cpython-310.pyc
+    |       |   |           keyboard.cpython-310.pyc
+    |       |   |           link.cpython-310.pyc
+    |       |   |           magic_filter.cpython-310.pyc
+    |       |   |           markdown.cpython-310.pyc
+    |       |   |           media_group.cpython-310.pyc
+    |       |   |           mixins.cpython-310.pyc
+    |       |   |           mypy_hacks.cpython-310.pyc
+    |       |   |           payload.cpython-310.pyc
+    |       |   |           serialization.cpython-310.pyc
+    |       |   |           text_decorations.cpython-310.pyc
+    |       |   |           token.cpython-310.pyc
+    |       |   |           warnings.cpython-310.pyc
+    |       |   |           web_app.cpython-310.pyc
+    |       |   |           web_app_signature.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---webhook
+    |       |   |   |   aiohttp_server.py
+    |       |   |   |   security.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           aiohttp_server.cpython-310.pyc
+    |       |   |           security.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |           exceptions.cpython-310.pyc
+    |       |           loggers.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           __meta__.cpython-310.pyc
+    |       |           
+    |       +---aiogram-3.26.0.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   REQUESTED
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           
+    |       +---aiohappyeyeballs
+    |       |   |   impl.py
+    |       |   |   py.typed
+    |       |   |   types.py
+    |       |   |   utils.py
+    |       |   |   _staggered.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |           impl.cpython-310.pyc
+    |       |           types.cpython-310.pyc
+    |       |           utils.cpython-310.pyc
+    |       |           _staggered.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---aiohappyeyeballs-2.6.1.dist-info
+    |       |       INSTALLER
+    |       |       LICENSE
+    |       |       METADATA
+    |       |       RECORD
+    |       |       WHEEL
+    |       |       
+    |       +---aiohttp
+    |       |   |   abc.py
+    |       |   |   base_protocol.py
+    |       |   |   client.py
+    |       |   |   client_exceptions.py
+    |       |   |   client_middlewares.py
+    |       |   |   client_middleware_digest_auth.py
+    |       |   |   client_proto.py
+    |       |   |   client_reqrep.py
+    |       |   |   client_ws.py
+    |       |   |   compression_utils.py
+    |       |   |   connector.py
+    |       |   |   cookiejar.py
+    |       |   |   formdata.py
+    |       |   |   hdrs.py
+    |       |   |   helpers.py
+    |       |   |   http.py
+    |       |   |   http_exceptions.py
+    |       |   |   http_parser.py
+    |       |   |   http_websocket.py
+    |       |   |   http_writer.py
+    |       |   |   log.py
+    |       |   |   multipart.py
+    |       |   |   payload.py
+    |       |   |   payload_streamer.py
+    |       |   |   py.typed
+    |       |   |   pytest_plugin.py
+    |       |   |   resolver.py
+    |       |   |   streams.py
+    |       |   |   tcp_helpers.py
+    |       |   |   test_utils.py
+    |       |   |   tracing.py
+    |       |   |   typedefs.py
+    |       |   |   web.py
+    |       |   |   web_app.py
+    |       |   |   web_exceptions.py
+    |       |   |   web_fileresponse.py
+    |       |   |   web_log.py
+    |       |   |   web_middlewares.py
+    |       |   |   web_protocol.py
+    |       |   |   web_request.py
+    |       |   |   web_response.py
+    |       |   |   web_routedef.py
+    |       |   |   web_runner.py
+    |       |   |   web_server.py
+    |       |   |   web_urldispatcher.py
+    |       |   |   web_ws.py
+    |       |   |   worker.py
+    |       |   |   _cookie_helpers.py
+    |       |   |   _cparser.pxd
+    |       |   |   _find_header.pxd
+    |       |   |   _headers.pxi
+    |       |   |   _http_parser.cp310-win_amd64.pyd
+    |       |   |   _http_parser.pyx
+    |       |   |   _http_writer.cp310-win_amd64.pyd
+    |       |   |   _http_writer.pyx
+    |       |   |   __init__.py
+    |       |   |   
+    |       |   +---.hash
+    |       |   |       hdrs.py.hash
+    |       |   |       _cparser.pxd.hash
+    |       |   |       _find_header.pxd.hash
+    |       |   |       _http_parser.pyx.hash
+    |       |   |       _http_writer.pyx.hash
+    |       |   |       
+    |       |   +---_websocket
+    |       |   |   |   helpers.py
+    |       |   |   |   mask.cp310-win_amd64.pyd
+    |       |   |   |   mask.pxd
+    |       |   |   |   mask.pyx
+    |       |   |   |   models.py
+    |       |   |   |   reader.py
+    |       |   |   |   reader_c.cp310-win_amd64.pyd
+    |       |   |   |   reader_c.pxd
+    |       |   |   |   reader_c.py
+    |       |   |   |   reader_py.py
+    |       |   |   |   writer.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |   +---.hash
+    |       |   |   |       mask.pxd.hash
+    |       |   |   |       mask.pyx.hash
+    |       |   |   |       reader_c.pxd.hash
+    |       |   |   |       
+    |       |   |           helpers.cpython-310.pyc
+    |       |   |           models.cpython-310.pyc
+    |       |   |           reader.cpython-310.pyc
+    |       |   |           reader_c.cpython-310.pyc
+    |       |   |           reader_py.cpython-310.pyc
+    |       |   |           writer.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |           abc.cpython-310.pyc
+    |       |           base_protocol.cpython-310.pyc
+    |       |           client.cpython-310.pyc
+    |       |           client_exceptions.cpython-310.pyc
+    |       |           client_middlewares.cpython-310.pyc
+    |       |           client_middleware_digest_auth.cpython-310.pyc
+    |       |           client_proto.cpython-310.pyc
+    |       |           client_reqrep.cpython-310.pyc
+    |       |           client_ws.cpython-310.pyc
+    |       |           compression_utils.cpython-310.pyc
+    |       |           connector.cpython-310.pyc
+    |       |           cookiejar.cpython-310.pyc
+    |       |           formdata.cpython-310.pyc
+    |       |           hdrs.cpython-310.pyc
+    |       |           helpers.cpython-310.pyc
+    |       |           http.cpython-310.pyc
+    |       |           http_exceptions.cpython-310.pyc
+    |       |           http_parser.cpython-310.pyc
+    |       |           http_websocket.cpython-310.pyc
+    |       |           http_writer.cpython-310.pyc
+    |       |           log.cpython-310.pyc
+    |       |           multipart.cpython-310.pyc
+    |       |           payload.cpython-310.pyc
+    |       |           payload_streamer.cpython-310.pyc
+    |       |           pytest_plugin.cpython-310.pyc
+    |       |           resolver.cpython-310.pyc
+    |       |           streams.cpython-310.pyc
+    |       |           tcp_helpers.cpython-310.pyc
+    |       |           test_utils.cpython-310.pyc
+    |       |           tracing.cpython-310.pyc
+    |       |           typedefs.cpython-310.pyc
+    |       |           web.cpython-310.pyc
+    |       |           web_app.cpython-310.pyc
+    |       |           web_exceptions.cpython-310.pyc
+    |       |           web_fileresponse.cpython-310.pyc
+    |       |           web_log.cpython-310.pyc
+    |       |           web_middlewares.cpython-310.pyc
+    |       |           web_protocol.cpython-310.pyc
+    |       |           web_request.cpython-310.pyc
+    |       |           web_response.cpython-310.pyc
+    |       |           web_routedef.cpython-310.pyc
+    |       |           web_runner.cpython-310.pyc
+    |       |           web_server.cpython-310.pyc
+    |       |           web_urldispatcher.cpython-310.pyc
+    |       |           web_ws.cpython-310.pyc
+    |       |           worker.cpython-310.pyc
+    |       |           _cookie_helpers.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---aiohttp-3.13.3.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   top_level.txt
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |       |   LICENSE.txt
+    |       |       |   
+    |       |       \---vendor
+    |       |           \---llhttp
+    |       |                   LICENSE
+    |       |                   
+    |       +---aiosignal
+    |       |   |   py.typed
+    |       |   |   __init__.py
+    |       |   |   
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---aiosignal-1.4.0.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   top_level.txt
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           
     |       +---alembic
     |       |   |   command.py
     |       |   |   config.py
@@ -685,6 +2243,86 @@ D:.
     |       |   \---licenses
     |       |           LICENSE.txt
     |       |           
+    |       +---async_timeout
+    |       |   |   py.typed
+    |       |   |   __init__.py
+    |       |   |   
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---async_timeout-5.0.1.dist-info
+    |       |       INSTALLER
+    |       |       LICENSE
+    |       |       METADATA
+    |       |       RECORD
+    |       |       top_level.txt
+    |       |       WHEEL
+    |       |       zip-safe
+    |       |       
+    |       +---attr
+    |       |   |   converters.py
+    |       |   |   converters.pyi
+    |       |   |   exceptions.py
+    |       |   |   exceptions.pyi
+    |       |   |   filters.py
+    |       |   |   filters.pyi
+    |       |   |   py.typed
+    |       |   |   setters.py
+    |       |   |   setters.pyi
+    |       |   |   validators.py
+    |       |   |   validators.pyi
+    |       |   |   _cmp.py
+    |       |   |   _cmp.pyi
+    |       |   |   _compat.py
+    |       |   |   _config.py
+    |       |   |   _funcs.py
+    |       |   |   _make.py
+    |       |   |   _next_gen.py
+    |       |   |   _typing_compat.pyi
+    |       |   |   _version_info.py
+    |       |   |   _version_info.pyi
+    |       |   |   __init__.py
+    |       |   |   __init__.pyi
+    |       |   |   
+    |       |           converters.cpython-310.pyc
+    |       |           exceptions.cpython-310.pyc
+    |       |           filters.cpython-310.pyc
+    |       |           setters.cpython-310.pyc
+    |       |           validators.cpython-310.pyc
+    |       |           _cmp.cpython-310.pyc
+    |       |           _compat.cpython-310.pyc
+    |       |           _config.cpython-310.pyc
+    |       |           _funcs.cpython-310.pyc
+    |       |           _make.cpython-310.pyc
+    |       |           _next_gen.cpython-310.pyc
+    |       |           _version_info.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---attrs
+    |       |   |   converters.py
+    |       |   |   exceptions.py
+    |       |   |   filters.py
+    |       |   |   py.typed
+    |       |   |   setters.py
+    |       |   |   validators.py
+    |       |   |   __init__.py
+    |       |   |   __init__.pyi
+    |       |   |   
+    |       |           converters.cpython-310.pyc
+    |       |           exceptions.cpython-310.pyc
+    |       |           filters.cpython-310.pyc
+    |       |           setters.cpython-310.pyc
+    |       |           validators.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---attrs-25.4.0.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           
     |       +---certifi
     |       |   |   cacert.pem
     |       |   |   core.py
@@ -700,6 +2338,7 @@ D:.
     |       |   |   INSTALLER
     |       |   |   METADATA
     |       |   |   RECORD
+    |       |   |   REQUESTED
     |       |   |   top_level.txt
     |       |   |   WHEEL
     |       |   |   
@@ -744,6 +2383,7 @@ D:.
     |       |   |   INSTALLER
     |       |   |   METADATA
     |       |   |   RECORD
+    |       |   |   REQUESTED
     |       |   |   top_level.txt
     |       |   |   WHEEL
     |       |   |   
@@ -880,6 +2520,7 @@ D:.
     |       |   |   INSTALLER
     |       |   |   METADATA
     |       |   |   RECORD
+    |       |   |   REQUESTED
     |       |   |   WHEEL
     |       |   |   
     |       |   \---licenses
@@ -1009,6 +2650,25 @@ D:.
     |       |   |   METADATA
     |       |   |   RECORD
     |       |   |   REQUESTED
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           
+    |       +---frozenlist
+    |       |   |   py.typed
+    |       |   |   _frozenlist.cp310-win_amd64.pyd
+    |       |   |   _frozenlist.pyx
+    |       |   |   __init__.py
+    |       |   |   __init__.pyi
+    |       |   |   
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---frozenlist-1.8.0.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   top_level.txt
     |       |   |   WHEEL
     |       |   |   
     |       |   \---licenses
@@ -1187,6 +2847,154 @@ D:.
     |       |   \---licenses
     |       |           LICENSE.txt
     |       |           
+    |       +---httpcore
+    |       |   |   py.typed
+    |       |   |   _api.py
+    |       |   |   _exceptions.py
+    |       |   |   _models.py
+    |       |   |   _ssl.py
+    |       |   |   _synchronization.py
+    |       |   |   _trace.py
+    |       |   |   _utils.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |   +---_async
+    |       |   |   |   connection.py
+    |       |   |   |   connection_pool.py
+    |       |   |   |   http11.py
+    |       |   |   |   http2.py
+    |       |   |   |   http_proxy.py
+    |       |   |   |   interfaces.py
+    |       |   |   |   socks_proxy.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           connection.cpython-310.pyc
+    |       |   |           connection_pool.cpython-310.pyc
+    |       |   |           http11.cpython-310.pyc
+    |       |   |           http2.cpython-310.pyc
+    |       |   |           http_proxy.cpython-310.pyc
+    |       |   |           interfaces.cpython-310.pyc
+    |       |   |           socks_proxy.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---_backends
+    |       |   |   |   anyio.py
+    |       |   |   |   auto.py
+    |       |   |   |   base.py
+    |       |   |   |   mock.py
+    |       |   |   |   sync.py
+    |       |   |   |   trio.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           anyio.cpython-310.pyc
+    |       |   |           auto.cpython-310.pyc
+    |       |   |           base.cpython-310.pyc
+    |       |   |           mock.cpython-310.pyc
+    |       |   |           sync.cpython-310.pyc
+    |       |   |           trio.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |   +---_sync
+    |       |   |   |   connection.py
+    |       |   |   |   connection_pool.py
+    |       |   |   |   http11.py
+    |       |   |   |   http2.py
+    |       |   |   |   http_proxy.py
+    |       |   |   |   interfaces.py
+    |       |   |   |   socks_proxy.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           connection.cpython-310.pyc
+    |       |   |           connection_pool.cpython-310.pyc
+    |       |   |           http11.cpython-310.pyc
+    |       |   |           http2.cpython-310.pyc
+    |       |   |           http_proxy.cpython-310.pyc
+    |       |   |           interfaces.cpython-310.pyc
+    |       |   |           socks_proxy.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |           _api.cpython-310.pyc
+    |       |           _exceptions.cpython-310.pyc
+    |       |           _models.cpython-310.pyc
+    |       |           _ssl.cpython-310.pyc
+    |       |           _synchronization.cpython-310.pyc
+    |       |           _trace.cpython-310.pyc
+    |       |           _utils.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---httpcore-1.0.9.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE.md
+    |       |           
+    |       +---httpx
+    |       |   |   py.typed
+    |       |   |   _api.py
+    |       |   |   _auth.py
+    |       |   |   _client.py
+    |       |   |   _config.py
+    |       |   |   _content.py
+    |       |   |   _decoders.py
+    |       |   |   _exceptions.py
+    |       |   |   _main.py
+    |       |   |   _models.py
+    |       |   |   _multipart.py
+    |       |   |   _status_codes.py
+    |       |   |   _types.py
+    |       |   |   _urlparse.py
+    |       |   |   _urls.py
+    |       |   |   _utils.py
+    |       |   |   __init__.py
+    |       |   |   __version__.py
+    |       |   |   
+    |       |   +---_transports
+    |       |   |   |   asgi.py
+    |       |   |   |   base.py
+    |       |   |   |   default.py
+    |       |   |   |   mock.py
+    |       |   |   |   wsgi.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           asgi.cpython-310.pyc
+    |       |   |           base.cpython-310.pyc
+    |       |   |           default.cpython-310.pyc
+    |       |   |           mock.cpython-310.pyc
+    |       |   |           wsgi.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |           _api.cpython-310.pyc
+    |       |           _auth.cpython-310.pyc
+    |       |           _client.cpython-310.pyc
+    |       |           _config.cpython-310.pyc
+    |       |           _content.cpython-310.pyc
+    |       |           _decoders.cpython-310.pyc
+    |       |           _exceptions.cpython-310.pyc
+    |       |           _main.cpython-310.pyc
+    |       |           _models.cpython-310.pyc
+    |       |           _multipart.cpython-310.pyc
+    |       |           _status_codes.cpython-310.pyc
+    |       |           _types.cpython-310.pyc
+    |       |           _urlparse.cpython-310.pyc
+    |       |           _urls.cpython-310.pyc
+    |       |           _utils.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           __version__.cpython-310.pyc
+    |       |           
+    |       +---httpx-0.28.1.dist-info
+    |       |   |   entry_points.txt
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   REQUESTED
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE.md
+    |       |           
     |       +---idna
     |       |   |   codec.py
     |       |   |   compat.py
@@ -1216,6 +3024,56 @@ D:.
     |       |   |   
     |       |   \---licenses
     |       |           LICENSE.md
+    |       |           
+    |       +---magic_filter
+    |       |   |   attrdict.py
+    |       |   |   exceptions.py
+    |       |   |   helper.py
+    |       |   |   magic.py
+    |       |   |   py.typed
+    |       |   |   util.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |   +---operations
+    |       |   |   |   base.py
+    |       |   |   |   call.py
+    |       |   |   |   cast.py
+    |       |   |   |   combination.py
+    |       |   |   |   comparator.py
+    |       |   |   |   extract.py
+    |       |   |   |   function.py
+    |       |   |   |   getattr.py
+    |       |   |   |   getitem.py
+    |       |   |   |   selector.py
+    |       |   |   |   __init__.py
+    |       |   |   |   
+    |       |   |           base.cpython-310.pyc
+    |       |   |           call.cpython-310.pyc
+    |       |   |           cast.cpython-310.pyc
+    |       |   |           combination.cpython-310.pyc
+    |       |   |           comparator.cpython-310.pyc
+    |       |   |           extract.cpython-310.pyc
+    |       |   |           function.cpython-310.pyc
+    |       |   |           getattr.cpython-310.pyc
+    |       |   |           getitem.cpython-310.pyc
+    |       |   |           selector.cpython-310.pyc
+    |       |   |           __init__.cpython-310.pyc
+    |       |   |           
+    |       |           attrdict.cpython-310.pyc
+    |       |           exceptions.cpython-310.pyc
+    |       |           helper.cpython-310.pyc
+    |       |           magic.cpython-310.pyc
+    |       |           util.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---magic_filter-1.0.12.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
     |       |           
     |       +---mako
     |       |   |   ast.py
@@ -1326,6 +3184,29 @@ D:.
     |       |   \---licenses
     |       |           LICENSE.txt
     |       |           
+    |       +---multidict
+    |       |   |   py.typed
+    |       |   |   _abc.py
+    |       |   |   _compat.py
+    |       |   |   _multidict.cp310-win_amd64.pyd
+    |       |   |   _multidict_py.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |           _abc.cpython-310.pyc
+    |       |           _compat.cpython-310.pyc
+    |       |           _multidict_py.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---multidict-6.7.1.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   top_level.txt
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           
     |       +---multipart
     |       |   |   decoders.py
     |       |   |   exceptions.py
@@ -1359,6 +3240,7 @@ D:.
     |       |   |   |   |   base_command.py
     |       |   |   |   |   cmdoptions.py
     |       |   |   |   |   command_context.py
+    |       |   |   |   |   index_command.py
     |       |   |   |   |   main.py
     |       |   |   |   |   main_parser.py
     |       |   |   |   |   parser.py
@@ -1372,6 +3254,7 @@ D:.
     |       |   |   |           base_command.cpython-310.pyc
     |       |   |   |           cmdoptions.cpython-310.pyc
     |       |   |   |           command_context.cpython-310.pyc
+    |       |   |   |           index_command.cpython-310.pyc
     |       |   |   |           main.cpython-310.pyc
     |       |   |   |           main_parser.cpython-310.pyc
     |       |   |   |           parser.cpython-310.pyc
@@ -1395,6 +3278,7 @@ D:.
     |       |   |   |   |   inspect.py
     |       |   |   |   |   install.py
     |       |   |   |   |   list.py
+    |       |   |   |   |   lock.py
     |       |   |   |   |   search.py
     |       |   |   |   |   show.py
     |       |   |   |   |   uninstall.py
@@ -1414,6 +3298,7 @@ D:.
     |       |   |   |           inspect.cpython-310.pyc
     |       |   |   |           install.cpython-310.pyc
     |       |   |   |           list.cpython-310.pyc
+    |       |   |   |           lock.cpython-310.pyc
     |       |   |   |           search.cpython-310.pyc
     |       |   |   |           show.cpython-310.pyc
     |       |   |   |           uninstall.cpython-310.pyc
@@ -1484,6 +3369,7 @@ D:.
     |       |   |   |   |   index.py
     |       |   |   |   |   installation_report.py
     |       |   |   |   |   link.py
+    |       |   |   |   |   release_control.py
     |       |   |   |   |   scheme.py
     |       |   |   |   |   search_scope.py
     |       |   |   |   |   selection_prefs.py
@@ -1497,6 +3383,7 @@ D:.
     |       |   |   |           index.cpython-310.pyc
     |       |   |   |           installation_report.cpython-310.pyc
     |       |   |   |           link.cpython-310.pyc
+    |       |   |   |           release_control.cpython-310.pyc
     |       |   |   |           scheme.cpython-310.pyc
     |       |   |   |           search_scope.cpython-310.pyc
     |       |   |   |           selection_prefs.cpython-310.pyc
@@ -1533,29 +3420,21 @@ D:.
     |       |   |   |   |   |   build_tracker.py
     |       |   |   |   |   |   metadata.py
     |       |   |   |   |   |   metadata_editable.py
-    |       |   |   |   |   |   metadata_legacy.py
     |       |   |   |   |   |   wheel.py
     |       |   |   |   |   |   wheel_editable.py
-    |       |   |   |   |   |   wheel_legacy.py
     |       |   |   |   |   |   __init__.py
     |       |   |   |   |   |   
     |       |   |   |   |           build_tracker.cpython-310.pyc
     |       |   |   |   |           metadata.cpython-310.pyc
     |       |   |   |   |           metadata_editable.cpython-310.pyc
-    |       |   |   |   |           metadata_legacy.cpython-310.pyc
     |       |   |   |   |           wheel.cpython-310.pyc
     |       |   |   |   |           wheel_editable.cpython-310.pyc
-    |       |   |   |   |           wheel_legacy.cpython-310.pyc
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
     |       |   |   |   +---install
-    |       |   |   |   |   |   editable_legacy.py
-    |       |   |   |   |   |   legacy.py
     |       |   |   |   |   |   wheel.py
     |       |   |   |   |   |   __init__.py
     |       |   |   |   |   |   
-    |       |   |   |   |           editable_legacy.cpython-310.pyc
-    |       |   |   |   |           legacy.cpython-310.pyc
     |       |   |   |   |           wheel.cpython-310.pyc
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
@@ -1566,6 +3445,8 @@ D:.
     |       |   |   |           
     |       |   |   +---req
     |       |   |   |   |   constructors.py
+    |       |   |   |   |   pep723.py
+    |       |   |   |   |   req_dependency_group.py
     |       |   |   |   |   req_file.py
     |       |   |   |   |   req_install.py
     |       |   |   |   |   req_set.py
@@ -1573,6 +3454,8 @@ D:.
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
     |       |   |   |           constructors.cpython-310.pyc
+    |       |   |   |           pep723.cpython-310.pyc
+    |       |   |   |           req_dependency_group.cpython-310.pyc
     |       |   |   |           req_file.cpython-310.pyc
     |       |   |   |           req_install.cpython-310.pyc
     |       |   |   |           req_set.cpython-310.pyc
@@ -1621,26 +3504,24 @@ D:.
     |       |   |   |   |   datetime.py
     |       |   |   |   |   deprecation.py
     |       |   |   |   |   direct_url_helpers.py
-    |       |   |   |   |   distutils_args.py
     |       |   |   |   |   egg_link.py
-    |       |   |   |   |   encoding.py
     |       |   |   |   |   entrypoints.py
     |       |   |   |   |   filesystem.py
     |       |   |   |   |   filetypes.py
     |       |   |   |   |   glibc.py
     |       |   |   |   |   hashes.py
-    |       |   |   |   |   inject_securetransport.py
     |       |   |   |   |   logging.py
     |       |   |   |   |   misc.py
-    |       |   |   |   |   models.py
     |       |   |   |   |   packaging.py
-    |       |   |   |   |   setuptools_build.py
+    |       |   |   |   |   pylock.py
+    |       |   |   |   |   retry.py
     |       |   |   |   |   subprocess.py
     |       |   |   |   |   temp_dir.py
     |       |   |   |   |   unpacking.py
     |       |   |   |   |   urls.py
     |       |   |   |   |   virtualenv.py
     |       |   |   |   |   wheel.py
+    |       |   |   |   |   _jaraco_text.py
     |       |   |   |   |   _log.py
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
@@ -1650,26 +3531,24 @@ D:.
     |       |   |   |           datetime.cpython-310.pyc
     |       |   |   |           deprecation.cpython-310.pyc
     |       |   |   |           direct_url_helpers.cpython-310.pyc
-    |       |   |   |           distutils_args.cpython-310.pyc
     |       |   |   |           egg_link.cpython-310.pyc
-    |       |   |   |           encoding.cpython-310.pyc
     |       |   |   |           entrypoints.cpython-310.pyc
     |       |   |   |           filesystem.cpython-310.pyc
     |       |   |   |           filetypes.cpython-310.pyc
     |       |   |   |           glibc.cpython-310.pyc
     |       |   |   |           hashes.cpython-310.pyc
-    |       |   |   |           inject_securetransport.cpython-310.pyc
     |       |   |   |           logging.cpython-310.pyc
     |       |   |   |           misc.cpython-310.pyc
-    |       |   |   |           models.cpython-310.pyc
     |       |   |   |           packaging.cpython-310.pyc
-    |       |   |   |           setuptools_build.cpython-310.pyc
+    |       |   |   |           pylock.cpython-310.pyc
+    |       |   |   |           retry.cpython-310.pyc
     |       |   |   |           subprocess.cpython-310.pyc
     |       |   |   |           temp_dir.cpython-310.pyc
     |       |   |   |           unpacking.cpython-310.pyc
     |       |   |   |           urls.cpython-310.pyc
     |       |   |   |           virtualenv.cpython-310.pyc
     |       |   |   |           wheel.cpython-310.pyc
+    |       |   |   |           _jaraco_text.cpython-310.pyc
     |       |   |   |           _log.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
@@ -1699,18 +3578,18 @@ D:.
     |       |   |           __init__.cpython-310.pyc
     |       |   |           
     |       |   +---_vendor
-    |       |   |   |   six.py
-    |       |   |   |   typing_extensions.py
+    |       |   |   |   README.rst
     |       |   |   |   vendor.txt
     |       |   |   |   __init__.py
     |       |   |   |   
     |       |   |   +---cachecontrol
     |       |   |   |   |   adapter.py
     |       |   |   |   |   cache.py
-    |       |   |   |   |   compat.py
     |       |   |   |   |   controller.py
     |       |   |   |   |   filewrapper.py
     |       |   |   |   |   heuristics.py
+    |       |   |   |   |   LICENSE.txt
+    |       |   |   |   |   py.typed
     |       |   |   |   |   serialize.py
     |       |   |   |   |   wrapper.py
     |       |   |   |   |   _cmd.py
@@ -1727,7 +3606,6 @@ D:.
     |       |   |   |   |           
     |       |   |   |           adapter.cpython-310.pyc
     |       |   |   |           cache.cpython-310.pyc
-    |       |   |   |           compat.cpython-310.pyc
     |       |   |   |           controller.cpython-310.pyc
     |       |   |   |           filewrapper.cpython-310.pyc
     |       |   |   |           heuristics.cpython-310.pyc
@@ -1739,6 +3617,8 @@ D:.
     |       |   |   +---certifi
     |       |   |   |   |   cacert.pem
     |       |   |   |   |   core.py
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   py.typed
     |       |   |   |   |   __init__.py
     |       |   |   |   |   __main__.py
     |       |   |   |   |   
@@ -1746,157 +3626,47 @@ D:.
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           __main__.cpython-310.pyc
     |       |   |   |           
-    |       |   |   +---chardet
-    |       |   |   |   |   big5freq.py
-    |       |   |   |   |   big5prober.py
-    |       |   |   |   |   chardistribution.py
-    |       |   |   |   |   charsetgroupprober.py
-    |       |   |   |   |   charsetprober.py
-    |       |   |   |   |   codingstatemachine.py
-    |       |   |   |   |   cp949prober.py
-    |       |   |   |   |   enums.py
-    |       |   |   |   |   escprober.py
-    |       |   |   |   |   escsm.py
-    |       |   |   |   |   eucjpprober.py
-    |       |   |   |   |   euckrfreq.py
-    |       |   |   |   |   euckrprober.py
-    |       |   |   |   |   euctwfreq.py
-    |       |   |   |   |   euctwprober.py
-    |       |   |   |   |   gb2312freq.py
-    |       |   |   |   |   gb2312prober.py
-    |       |   |   |   |   hebrewprober.py
-    |       |   |   |   |   jisfreq.py
-    |       |   |   |   |   johabfreq.py
-    |       |   |   |   |   johabprober.py
-    |       |   |   |   |   jpcntx.py
-    |       |   |   |   |   langbulgarianmodel.py
-    |       |   |   |   |   langgreekmodel.py
-    |       |   |   |   |   langhebrewmodel.py
-    |       |   |   |   |   langhungarianmodel.py
-    |       |   |   |   |   langrussianmodel.py
-    |       |   |   |   |   langthaimodel.py
-    |       |   |   |   |   langturkishmodel.py
-    |       |   |   |   |   latin1prober.py
-    |       |   |   |   |   mbcharsetprober.py
-    |       |   |   |   |   mbcsgroupprober.py
-    |       |   |   |   |   mbcssm.py
-    |       |   |   |   |   sbcharsetprober.py
-    |       |   |   |   |   sbcsgroupprober.py
-    |       |   |   |   |   sjisprober.py
-    |       |   |   |   |   universaldetector.py
-    |       |   |   |   |   utf1632prober.py
-    |       |   |   |   |   utf8prober.py
-    |       |   |   |   |   version.py
+    |       |   |   +---dependency_groups
+    |       |   |   |   |   LICENSE.txt
+    |       |   |   |   |   py.typed
+    |       |   |   |   |   _implementation.py
+    |       |   |   |   |   _lint_dependency_groups.py
+    |       |   |   |   |   _pip_wrapper.py
+    |       |   |   |   |   _toml_compat.py
     |       |   |   |   |   __init__.py
+    |       |   |   |   |   __main__.py
     |       |   |   |   |   
-    |       |   |   |   +---cli
-    |       |   |   |   |   |   chardetect.py
-    |       |   |   |   |   |   __init__.py
-    |       |   |   |   |   |   
-    |       |   |   |   |           chardetect.cpython-310.pyc
-    |       |   |   |   |           __init__.cpython-310.pyc
-    |       |   |   |   |           
-    |       |   |   |   +---metadata
-    |       |   |   |   |   |   languages.py
-    |       |   |   |   |   |   __init__.py
-    |       |   |   |   |   |   
-    |       |   |   |   |           languages.cpython-310.pyc
-    |       |   |   |   |           __init__.cpython-310.pyc
-    |       |   |   |   |           
-    |       |   |   |           big5freq.cpython-310.pyc
-    |       |   |   |           big5prober.cpython-310.pyc
-    |       |   |   |           chardistribution.cpython-310.pyc
-    |       |   |   |           charsetgroupprober.cpython-310.pyc
-    |       |   |   |           charsetprober.cpython-310.pyc
-    |       |   |   |           codingstatemachine.cpython-310.pyc
-    |       |   |   |           cp949prober.cpython-310.pyc
-    |       |   |   |           enums.cpython-310.pyc
-    |       |   |   |           escprober.cpython-310.pyc
-    |       |   |   |           escsm.cpython-310.pyc
-    |       |   |   |           eucjpprober.cpython-310.pyc
-    |       |   |   |           euckrfreq.cpython-310.pyc
-    |       |   |   |           euckrprober.cpython-310.pyc
-    |       |   |   |           euctwfreq.cpython-310.pyc
-    |       |   |   |           euctwprober.cpython-310.pyc
-    |       |   |   |           gb2312freq.cpython-310.pyc
-    |       |   |   |           gb2312prober.cpython-310.pyc
-    |       |   |   |           hebrewprober.cpython-310.pyc
-    |       |   |   |           jisfreq.cpython-310.pyc
-    |       |   |   |           johabfreq.cpython-310.pyc
-    |       |   |   |           johabprober.cpython-310.pyc
-    |       |   |   |           jpcntx.cpython-310.pyc
-    |       |   |   |           langbulgarianmodel.cpython-310.pyc
-    |       |   |   |           langgreekmodel.cpython-310.pyc
-    |       |   |   |           langhebrewmodel.cpython-310.pyc
-    |       |   |   |           langhungarianmodel.cpython-310.pyc
-    |       |   |   |           langrussianmodel.cpython-310.pyc
-    |       |   |   |           langthaimodel.cpython-310.pyc
-    |       |   |   |           langturkishmodel.cpython-310.pyc
-    |       |   |   |           latin1prober.cpython-310.pyc
-    |       |   |   |           mbcharsetprober.cpython-310.pyc
-    |       |   |   |           mbcsgroupprober.cpython-310.pyc
-    |       |   |   |           mbcssm.cpython-310.pyc
-    |       |   |   |           sbcharsetprober.cpython-310.pyc
-    |       |   |   |           sbcsgroupprober.cpython-310.pyc
-    |       |   |   |           sjisprober.cpython-310.pyc
-    |       |   |   |           universaldetector.cpython-310.pyc
-    |       |   |   |           utf1632prober.cpython-310.pyc
-    |       |   |   |           utf8prober.cpython-310.pyc
-    |       |   |   |           version.cpython-310.pyc
+    |       |   |   |           _implementation.cpython-310.pyc
+    |       |   |   |           _lint_dependency_groups.cpython-310.pyc
+    |       |   |   |           _pip_wrapper.cpython-310.pyc
+    |       |   |   |           _toml_compat.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
-    |       |   |   |           
-    |       |   |   +---colorama
-    |       |   |   |   |   ansi.py
-    |       |   |   |   |   ansitowin32.py
-    |       |   |   |   |   initialise.py
-    |       |   |   |   |   win32.py
-    |       |   |   |   |   winterm.py
-    |       |   |   |   |   __init__.py
-    |       |   |   |   |   
-    |       |   |   |           ansi.cpython-310.pyc
-    |       |   |   |           ansitowin32.cpython-310.pyc
-    |       |   |   |           initialise.cpython-310.pyc
-    |       |   |   |           win32.cpython-310.pyc
-    |       |   |   |           winterm.cpython-310.pyc
-    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           __main__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---distlib
     |       |   |   |   |   compat.py
-    |       |   |   |   |   database.py
-    |       |   |   |   |   index.py
-    |       |   |   |   |   locators.py
-    |       |   |   |   |   manifest.py
-    |       |   |   |   |   markers.py
-    |       |   |   |   |   metadata.py
+    |       |   |   |   |   LICENSE.txt
     |       |   |   |   |   resources.py
     |       |   |   |   |   scripts.py
     |       |   |   |   |   t32.exe
     |       |   |   |   |   t64-arm.exe
     |       |   |   |   |   t64.exe
     |       |   |   |   |   util.py
-    |       |   |   |   |   version.py
     |       |   |   |   |   w32.exe
     |       |   |   |   |   w64-arm.exe
     |       |   |   |   |   w64.exe
-    |       |   |   |   |   wheel.py
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
     |       |   |   |           compat.cpython-310.pyc
-    |       |   |   |           database.cpython-310.pyc
-    |       |   |   |           index.cpython-310.pyc
-    |       |   |   |           locators.cpython-310.pyc
-    |       |   |   |           manifest.cpython-310.pyc
-    |       |   |   |           markers.cpython-310.pyc
-    |       |   |   |           metadata.cpython-310.pyc
     |       |   |   |           resources.cpython-310.pyc
     |       |   |   |           scripts.cpython-310.pyc
     |       |   |   |           util.cpython-310.pyc
-    |       |   |   |           version.cpython-310.pyc
-    |       |   |   |           wheel.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---distro
     |       |   |   |   |   distro.py
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   py.typed
     |       |   |   |   |   __init__.py
     |       |   |   |   |   __main__.py
     |       |   |   |   |   
@@ -1910,7 +3680,9 @@ D:.
     |       |   |   |   |   core.py
     |       |   |   |   |   idnadata.py
     |       |   |   |   |   intranges.py
+    |       |   |   |   |   LICENSE.md
     |       |   |   |   |   package_data.py
+    |       |   |   |   |   py.typed
     |       |   |   |   |   uts46data.py
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
@@ -1924,6 +3696,7 @@ D:.
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---msgpack
+    |       |   |   |   |   COPYING
     |       |   |   |   |   exceptions.py
     |       |   |   |   |   ext.py
     |       |   |   |   |   fallback.py
@@ -1935,69 +3708,61 @@ D:.
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---packaging
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   LICENSE.APACHE
+    |       |   |   |   |   LICENSE.BSD
     |       |   |   |   |   markers.py
+    |       |   |   |   |   metadata.py
+    |       |   |   |   |   py.typed
+    |       |   |   |   |   pylock.py
     |       |   |   |   |   requirements.py
     |       |   |   |   |   specifiers.py
     |       |   |   |   |   tags.py
     |       |   |   |   |   utils.py
     |       |   |   |   |   version.py
+    |       |   |   |   |   _elffile.py
     |       |   |   |   |   _manylinux.py
     |       |   |   |   |   _musllinux.py
+    |       |   |   |   |   _parser.py
     |       |   |   |   |   _structures.py
-    |       |   |   |   |   __about__.py
+    |       |   |   |   |   _tokenizer.py
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
+    |       |   |   |   +---licenses
+    |       |   |   |   |   |   _spdx.py
+    |       |   |   |   |   |   __init__.py
+    |       |   |   |   |   |   
+    |       |   |   |   |           _spdx.cpython-310.pyc
+    |       |   |   |   |           __init__.cpython-310.pyc
+    |       |   |   |   |           
     |       |   |   |           markers.cpython-310.pyc
+    |       |   |   |           metadata.cpython-310.pyc
+    |       |   |   |           pylock.cpython-310.pyc
     |       |   |   |           requirements.cpython-310.pyc
     |       |   |   |           specifiers.cpython-310.pyc
     |       |   |   |           tags.cpython-310.pyc
     |       |   |   |           utils.cpython-310.pyc
     |       |   |   |           version.cpython-310.pyc
+    |       |   |   |           _elffile.cpython-310.pyc
     |       |   |   |           _manylinux.cpython-310.pyc
     |       |   |   |           _musllinux.cpython-310.pyc
+    |       |   |   |           _parser.cpython-310.pyc
     |       |   |   |           _structures.cpython-310.pyc
-    |       |   |   |           __about__.cpython-310.pyc
-    |       |   |   |           __init__.cpython-310.pyc
-    |       |   |   |           
-    |       |   |   +---pep517
-    |       |   |   |   |   build.py
-    |       |   |   |   |   check.py
-    |       |   |   |   |   colorlog.py
-    |       |   |   |   |   compat.py
-    |       |   |   |   |   dirtools.py
-    |       |   |   |   |   envbuild.py
-    |       |   |   |   |   meta.py
-    |       |   |   |   |   wrappers.py
-    |       |   |   |   |   __init__.py
-    |       |   |   |   |   
-    |       |   |   |   +---in_process
-    |       |   |   |   |   |   _in_process.py
-    |       |   |   |   |   |   __init__.py
-    |       |   |   |   |   |   
-    |       |   |   |   |           _in_process.cpython-310.pyc
-    |       |   |   |   |           __init__.cpython-310.pyc
-    |       |   |   |   |           
-    |       |   |   |           build.cpython-310.pyc
-    |       |   |   |           check.cpython-310.pyc
-    |       |   |   |           colorlog.cpython-310.pyc
-    |       |   |   |           compat.cpython-310.pyc
-    |       |   |   |           dirtools.cpython-310.pyc
-    |       |   |   |           envbuild.cpython-310.pyc
-    |       |   |   |           meta.cpython-310.pyc
-    |       |   |   |           wrappers.cpython-310.pyc
+    |       |   |   |           _tokenizer.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---pkg_resources
-    |       |   |   |   |   py31compat.py
+    |       |   |   |   |   LICENSE
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
-    |       |   |   |           py31compat.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---platformdirs
     |       |   |   |   |   android.py
     |       |   |   |   |   api.py
+    |       |   |   |   |   LICENSE
     |       |   |   |   |   macos.py
+    |       |   |   |   |   py.typed
     |       |   |   |   |   unix.py
     |       |   |   |   |   version.py
     |       |   |   |   |   windows.py
@@ -2014,11 +3779,11 @@ D:.
     |       |   |   |           __main__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---pygments
-    |       |   |   |   |   cmdline.py
     |       |   |   |   |   console.py
     |       |   |   |   |   filter.py
     |       |   |   |   |   formatter.py
     |       |   |   |   |   lexer.py
+    |       |   |   |   |   LICENSE
     |       |   |   |   |   modeline.py
     |       |   |   |   |   plugin.py
     |       |   |   |   |   regexopt.py
@@ -2037,33 +3802,9 @@ D:.
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
     |       |   |   |   +---formatters
-    |       |   |   |   |   |   bbcode.py
-    |       |   |   |   |   |   groff.py
-    |       |   |   |   |   |   html.py
-    |       |   |   |   |   |   img.py
-    |       |   |   |   |   |   irc.py
-    |       |   |   |   |   |   latex.py
-    |       |   |   |   |   |   other.py
-    |       |   |   |   |   |   pangomarkup.py
-    |       |   |   |   |   |   rtf.py
-    |       |   |   |   |   |   svg.py
-    |       |   |   |   |   |   terminal.py
-    |       |   |   |   |   |   terminal256.py
     |       |   |   |   |   |   _mapping.py
     |       |   |   |   |   |   __init__.py
     |       |   |   |   |   |   
-    |       |   |   |   |           bbcode.cpython-310.pyc
-    |       |   |   |   |           groff.cpython-310.pyc
-    |       |   |   |   |           html.cpython-310.pyc
-    |       |   |   |   |           img.cpython-310.pyc
-    |       |   |   |   |           irc.cpython-310.pyc
-    |       |   |   |   |           latex.cpython-310.pyc
-    |       |   |   |   |           other.cpython-310.pyc
-    |       |   |   |   |           pangomarkup.cpython-310.pyc
-    |       |   |   |   |           rtf.cpython-310.pyc
-    |       |   |   |   |           svg.cpython-310.pyc
-    |       |   |   |   |           terminal.cpython-310.pyc
-    |       |   |   |   |           terminal256.cpython-310.pyc
     |       |   |   |   |           _mapping.cpython-310.pyc
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
@@ -2077,11 +3818,12 @@ D:.
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
     |       |   |   |   +---styles
+    |       |   |   |   |   |   _mapping.py
     |       |   |   |   |   |   __init__.py
     |       |   |   |   |   |   
+    |       |   |   |   |           _mapping.cpython-310.pyc
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
-    |       |   |   |           cmdline.cpython-310.pyc
     |       |   |   |           console.cpython-310.pyc
     |       |   |   |           filter.cpython-310.pyc
     |       |   |   |           formatter.cpython-310.pyc
@@ -2098,32 +3840,20 @@ D:.
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           __main__.cpython-310.pyc
     |       |   |   |           
-    |       |   |   +---pyparsing
-    |       |   |   |   |   actions.py
-    |       |   |   |   |   common.py
-    |       |   |   |   |   core.py
-    |       |   |   |   |   exceptions.py
-    |       |   |   |   |   helpers.py
-    |       |   |   |   |   results.py
-    |       |   |   |   |   testing.py
-    |       |   |   |   |   unicode.py
-    |       |   |   |   |   util.py
+    |       |   |   +---pyproject_hooks
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   py.typed
+    |       |   |   |   |   _impl.py
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
-    |       |   |   |   +---diagram
+    |       |   |   |   +---_in_process
+    |       |   |   |   |   |   _in_process.py
     |       |   |   |   |   |   __init__.py
     |       |   |   |   |   |   
+    |       |   |   |   |           _in_process.cpython-310.pyc
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
-    |       |   |   |           actions.cpython-310.pyc
-    |       |   |   |           common.cpython-310.pyc
-    |       |   |   |           core.cpython-310.pyc
-    |       |   |   |           exceptions.cpython-310.pyc
-    |       |   |   |           helpers.cpython-310.pyc
-    |       |   |   |           results.cpython-310.pyc
-    |       |   |   |           testing.cpython-310.pyc
-    |       |   |   |           unicode.cpython-310.pyc
-    |       |   |   |           util.cpython-310.pyc
+    |       |   |   |           _impl.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---requests
@@ -2136,6 +3866,7 @@ D:.
     |       |   |   |   |   exceptions.py
     |       |   |   |   |   help.py
     |       |   |   |   |   hooks.py
+    |       |   |   |   |   LICENSE
     |       |   |   |   |   models.py
     |       |   |   |   |   packages.py
     |       |   |   |   |   sessions.py
@@ -2166,22 +3897,28 @@ D:.
     |       |   |   |           __version__.cpython-310.pyc
     |       |   |   |           
     |       |   |   +---resolvelib
+    |       |   |   |   |   LICENSE
     |       |   |   |   |   providers.py
+    |       |   |   |   |   py.typed
     |       |   |   |   |   reporters.py
-    |       |   |   |   |   resolvers.py
     |       |   |   |   |   structs.py
     |       |   |   |   |   __init__.py
     |       |   |   |   |   
-    |       |   |   |   +---compat
-    |       |   |   |   |   |   collections_abc.py
+    |       |   |   |   +---resolvers
+    |       |   |   |   |   |   abstract.py
+    |       |   |   |   |   |   criterion.py
+    |       |   |   |   |   |   exceptions.py
+    |       |   |   |   |   |   resolution.py
     |       |   |   |   |   |   __init__.py
     |       |   |   |   |   |   
-    |       |   |   |   |           collections_abc.cpython-310.pyc
+    |       |   |   |   |           abstract.cpython-310.pyc
+    |       |   |   |   |           criterion.cpython-310.pyc
+    |       |   |   |   |           exceptions.cpython-310.pyc
+    |       |   |   |   |           resolution.cpython-310.pyc
     |       |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |           
     |       |   |   |           providers.cpython-310.pyc
     |       |   |   |           reporters.cpython-310.pyc
-    |       |   |   |           resolvers.cpython-310.pyc
     |       |   |   |           structs.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
@@ -2209,6 +3946,7 @@ D:.
     |       |   |   |   |   json.py
     |       |   |   |   |   jupyter.py
     |       |   |   |   |   layout.py
+    |       |   |   |   |   LICENSE
     |       |   |   |   |   live.py
     |       |   |   |   |   live_render.py
     |       |   |   |   |   logging.py
@@ -2223,6 +3961,7 @@ D:.
     |       |   |   |   |   progress_bar.py
     |       |   |   |   |   prompt.py
     |       |   |   |   |   protocol.py
+    |       |   |   |   |   py.typed
     |       |   |   |   |   region.py
     |       |   |   |   |   repr.py
     |       |   |   |   |   rule.py
@@ -2246,9 +3985,11 @@ D:.
     |       |   |   |   |   _emoji_replace.py
     |       |   |   |   |   _export_format.py
     |       |   |   |   |   _extension.py
+    |       |   |   |   |   _fileno.py
     |       |   |   |   |   _inspect.py
     |       |   |   |   |   _log_render.py
     |       |   |   |   |   _loop.py
+    |       |   |   |   |   _null_file.py
     |       |   |   |   |   _palettes.py
     |       |   |   |   |   _pick.py
     |       |   |   |   |   _ratio.py
@@ -2322,9 +4063,11 @@ D:.
     |       |   |   |           _emoji_replace.cpython-310.pyc
     |       |   |   |           _export_format.cpython-310.pyc
     |       |   |   |           _extension.cpython-310.pyc
+    |       |   |   |           _fileno.cpython-310.pyc
     |       |   |   |           _inspect.cpython-310.pyc
     |       |   |   |           _log_render.cpython-310.pyc
     |       |   |   |           _loop.cpython-310.pyc
+    |       |   |   |           _null_file.cpython-310.pyc
     |       |   |   |           _palettes.cpython-310.pyc
     |       |   |   |           _pick.cpython-310.pyc
     |       |   |   |           _ratio.cpython-310.pyc
@@ -2338,32 +4081,9 @@ D:.
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           __main__.cpython-310.pyc
     |       |   |   |           
-    |       |   |   +---tenacity
-    |       |   |   |   |   after.py
-    |       |   |   |   |   before.py
-    |       |   |   |   |   before_sleep.py
-    |       |   |   |   |   nap.py
-    |       |   |   |   |   retry.py
-    |       |   |   |   |   stop.py
-    |       |   |   |   |   tornadoweb.py
-    |       |   |   |   |   wait.py
-    |       |   |   |   |   _asyncio.py
-    |       |   |   |   |   _utils.py
-    |       |   |   |   |   __init__.py
-    |       |   |   |   |   
-    |       |   |   |           after.cpython-310.pyc
-    |       |   |   |           before.cpython-310.pyc
-    |       |   |   |           before_sleep.cpython-310.pyc
-    |       |   |   |           nap.cpython-310.pyc
-    |       |   |   |           retry.cpython-310.pyc
-    |       |   |   |           stop.cpython-310.pyc
-    |       |   |   |           tornadoweb.cpython-310.pyc
-    |       |   |   |           wait.cpython-310.pyc
-    |       |   |   |           _asyncio.cpython-310.pyc
-    |       |   |   |           _utils.cpython-310.pyc
-    |       |   |   |           __init__.cpython-310.pyc
-    |       |   |   |           
     |       |   |   +---tomli
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   py.typed
     |       |   |   |   |   _parser.py
     |       |   |   |   |   _re.py
     |       |   |   |   |   _types.py
@@ -2374,12 +4094,39 @@ D:.
     |       |   |   |           _types.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
+    |       |   |   +---tomli_w
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   py.typed
+    |       |   |   |   |   _writer.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |           _writer.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
+    |       |   |   +---truststore
+    |       |   |   |   |   LICENSE
+    |       |   |   |   |   py.typed
+    |       |   |   |   |   _api.py
+    |       |   |   |   |   _macos.py
+    |       |   |   |   |   _openssl.py
+    |       |   |   |   |   _ssl_constants.py
+    |       |   |   |   |   _windows.py
+    |       |   |   |   |   __init__.py
+    |       |   |   |   |   
+    |       |   |   |           _api.cpython-310.pyc
+    |       |   |   |           _macos.cpython-310.pyc
+    |       |   |   |           _openssl.cpython-310.pyc
+    |       |   |   |           _ssl_constants.cpython-310.pyc
+    |       |   |   |           _windows.cpython-310.pyc
+    |       |   |   |           __init__.cpython-310.pyc
+    |       |   |   |           
     |       |   |   +---urllib3
     |       |   |   |   |   connection.py
     |       |   |   |   |   connectionpool.py
     |       |   |   |   |   exceptions.py
     |       |   |   |   |   fields.py
     |       |   |   |   |   filepost.py
+    |       |   |   |   |   LICENSE.txt
     |       |   |   |   |   poolmanager.py
     |       |   |   |   |   request.py
     |       |   |   |   |   response.py
@@ -2419,9 +4166,11 @@ D:.
     |       |   |   |   |   |   
     |       |   |   |   |   +---backports
     |       |   |   |   |   |   |   makefile.py
+    |       |   |   |   |   |   |   weakref_finalize.py
     |       |   |   |   |   |   |   __init__.py
     |       |   |   |   |   |   |   
     |       |   |   |   |   |           makefile.cpython-310.pyc
+    |       |   |   |   |   |           weakref_finalize.cpython-310.pyc
     |       |   |   |   |   |           __init__.cpython-310.pyc
     |       |   |   |   |   |           
     |       |   |   |   |           six.cpython-310.pyc
@@ -2468,37 +4217,86 @@ D:.
     |       |   |   |           _version.cpython-310.pyc
     |       |   |   |           __init__.cpython-310.pyc
     |       |   |   |           
-    |       |   |   +---webencodings
-    |       |   |   |   |   labels.py
-    |       |   |   |   |   mklabels.py
-    |       |   |   |   |   tests.py
-    |       |   |   |   |   x_user_defined.py
-    |       |   |   |   |   __init__.py
-    |       |   |   |   |   
-    |       |   |   |           labels.cpython-310.pyc
-    |       |   |   |           mklabels.cpython-310.pyc
-    |       |   |   |           tests.cpython-310.pyc
-    |       |   |   |           x_user_defined.cpython-310.pyc
-    |       |   |   |           __init__.cpython-310.pyc
-    |       |   |   |           
-    |       |   |           six.cpython-310.pyc
-    |       |   |           typing_extensions.cpython-310.pyc
     |       |   |           __init__.cpython-310.pyc
     |       |   |           
     |       |           __init__.cpython-310.pyc
     |       |           __main__.cpython-310.pyc
     |       |           __pip-runner__.cpython-310.pyc
     |       |           
-    |       +---pip-22.2.1.dist-info
-    |       |       entry_points.txt
-    |       |       INSTALLER
-    |       |       LICENSE.txt
-    |       |       METADATA
-    |       |       RECORD
-    |       |       REQUESTED
-    |       |       top_level.txt
-    |       |       WHEEL
-    |       |       
+    |       +---pip-26.0.1.dist-info
+    |       |   |   entry_points.txt
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   REQUESTED
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |       |   AUTHORS.txt
+    |       |       |   LICENSE.txt
+    |       |       |   
+    |       |       \---src
+    |       |           \---pip
+    |       |               \---_vendor
+    |       |                   +---cachecontrol
+    |       |                   |       LICENSE.txt
+    |       |                   |       
+    |       |                   +---certifi
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---dependency_groups
+    |       |                   |       LICENSE.txt
+    |       |                   |       
+    |       |                   +---distlib
+    |       |                   |       LICENSE.txt
+    |       |                   |       
+    |       |                   +---distro
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---idna
+    |       |                   |       LICENSE.md
+    |       |                   |       
+    |       |                   +---msgpack
+    |       |                   |       COPYING
+    |       |                   |       
+    |       |                   +---packaging
+    |       |                   |       LICENSE
+    |       |                   |       LICENSE.APACHE
+    |       |                   |       LICENSE.BSD
+    |       |                   |       
+    |       |                   +---pkg_resources
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---platformdirs
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---pygments
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---pyproject_hooks
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---requests
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---resolvelib
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---rich
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---tomli
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---tomli_w
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   +---truststore
+    |       |                   |       LICENSE
+    |       |                   |       
+    |       |                   \---urllib3
+    |       |                           LICENSE.txt
+    |       |                           
     |       +---pkg_resources
     |       |   |   __init__.py
     |       |   |   
@@ -2614,6 +4412,31 @@ D:.
     |       |   |           __init__.cpython-310.pyc
     |       |   |           
     |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---propcache
+    |       |   |   api.py
+    |       |   |   py.typed
+    |       |   |   _helpers.py
+    |       |   |   _helpers_c.cp310-win_amd64.pyd
+    |       |   |   _helpers_c.pyx
+    |       |   |   _helpers_py.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |           api.cpython-310.pyc
+    |       |           _helpers.cpython-310.pyc
+    |       |           _helpers_py.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---propcache-0.4.1.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   top_level.txt
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           NOTICE
     |       |           
     |       +---psycopg2
     |       |   |   errorcodes.py
@@ -4141,6 +5964,7 @@ D:.
     |       |   |   INSTALLER
     |       |   |   METADATA
     |       |   |   RECORD
+    |       |   |   REQUESTED
     |       |   |   WHEEL
     |       |   |   
     |       |   \---licenses
@@ -5020,6 +6844,7 @@ D:.
     |       |   |   INSTALLER
     |       |   |   METADATA
     |       |   |   RECORD
+    |       |   |   REQUESTED
     |       |   |   WHEEL
     |       |   |   
     |       |   \---licenses
@@ -5141,6 +6966,39 @@ D:.
     |       |   \---licenses
     |       |           LICENSE.md
     |       |           
+    |       +---yarl
+    |       |   |   py.typed
+    |       |   |   _parse.py
+    |       |   |   _path.py
+    |       |   |   _query.py
+    |       |   |   _quoters.py
+    |       |   |   _quoting.py
+    |       |   |   _quoting_c.cp310-win_amd64.pyd
+    |       |   |   _quoting_c.pyx
+    |       |   |   _quoting_py.py
+    |       |   |   _url.py
+    |       |   |   __init__.py
+    |       |   |   
+    |       |           _parse.cpython-310.pyc
+    |       |           _path.cpython-310.pyc
+    |       |           _query.cpython-310.pyc
+    |       |           _quoters.cpython-310.pyc
+    |       |           _quoting.cpython-310.pyc
+    |       |           _quoting_py.cpython-310.pyc
+    |       |           _url.cpython-310.pyc
+    |       |           __init__.cpython-310.pyc
+    |       |           
+    |       +---yarl-1.23.0.dist-info
+    |       |   |   INSTALLER
+    |       |   |   METADATA
+    |       |   |   RECORD
+    |       |   |   top_level.txt
+    |       |   |   WHEEL
+    |       |   |   
+    |       |   \---licenses
+    |       |           LICENSE
+    |       |           NOTICE
+    |       |           
     |       +---_distutils_hack
     |       |   |   override.py
     |       |   |   __init__.py
@@ -5158,6 +7016,7 @@ D:.
             deactivate.bat
             dotenv.exe
             fastapi.exe
+            httpx.exe
             mako-render.exe
             normalizer.exe
             pip.exe

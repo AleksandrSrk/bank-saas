@@ -1,8 +1,12 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+import time
+
+from sqlalchemy import func
 
 from app.models.bank_connection import BankConnection
 from app.models.bank_account import BankAccount
+from app.models.bank_operation import BankOperation
 
 from app.integrations.tochka.client import TochkaClient
 from app.services.import_service import ImportService
@@ -37,17 +41,23 @@ class TochkaSyncService:
             consent_id=connection.consent_id
         )
 
-        # 4. определяем период синхронизации
         now = datetime.utcnow()
 
-        if connection.last_synced_at:
-            from_date = connection.last_synced_at - timedelta(minutes=5)
+        # 4. определяем дату последней операции
+        last_operation = (
+            db.query(func.max(BankOperation.operation_date))
+            .filter(BankOperation.company_id == company_id)
+            .scalar()
+        )
+
+        if last_operation:
+            from_date = last_operation - timedelta(days=3)
         else:
-            from_date = now - timedelta(days=30)
+            from_date = now - timedelta(days=90)
 
         to_date = now
 
-        # 5. получаем список счетов
+        # 5. получаем счета из банка
         try:
             accounts_response = client.get_accounts()
         except Exception as e:
@@ -61,7 +71,7 @@ class TochkaSyncService:
         if not accounts:
             return {"error": "no accounts found"}
 
-        # ---- сохраняем счета в БД ----
+        # 6. сохраняем счета в БД
         for account in accounts:
 
             account_id = account.get("accountId")
@@ -93,9 +103,9 @@ class TochkaSyncService:
 
         db.commit()
 
-        # ---- получаем операции ----
         all_operations = []
 
+        # 7. получаем операции по каждому счету
         for account in accounts:
 
             account_id = account.get("accountId")
@@ -104,21 +114,42 @@ class TochkaSyncService:
                 continue
 
             try:
-                statements = client.get_statements(
+
+                # создаем выписку
+                statement = client.create_statement(
                     account_id=account_id,
                     from_date=from_date,
                     to_date=to_date
                 )
-            except Exception:
+
+                statement_id = statement["Data"]["Statement"]["statementId"]
+
+                # ждем пока банк сформирует выписку
+                time.sleep(2)
+
+                # получаем готовую выписку
+                statement_data = client.get_statement(
+                    account_id=account_id,
+                    statement_id=statement_id
+                )
+
+            except Exception as e:
+                print("STATEMENT ERROR:", e)
                 continue
 
-            statement_list = statements.get("Data", {}).get("Statement", [])
+            statement_list = statement_data.get("Data", {}).get("Statement", [])
 
             for statement in statement_list:
-                transactions = statement.get("Transaction", [])
-                all_operations.extend(transactions)
 
-        # ---- конвертируем операции в DTO ----
+                account_id = statement.get("accountId")
+
+                transactions = statement.get("Transaction", [])
+
+                for tx in transactions:
+                    tx["accountId"] = account_id
+                    all_operations.append(tx)
+
+        # 8. конвертируем операции в DTO
         dtos = []
 
         for op in all_operations:
@@ -140,14 +171,12 @@ class TochkaSyncService:
             counterparty_inn = None
             counterparty_name = None
 
-            # счет контрагента
             if op.get("CreditorAccount"):
                 counterparty_account = op["CreditorAccount"].get("identification")
 
             if op.get("DebtorAccount"):
                 counterparty_account = op["DebtorAccount"].get("identification")
 
-            # данные контрагента
             if op.get("CreditorParty"):
                 counterparty_inn = op["CreditorParty"].get("inn")
                 counterparty_name = op["CreditorParty"].get("name")
@@ -156,7 +185,6 @@ class TochkaSyncService:
                 counterparty_inn = op["DebtorParty"].get("inn")
                 counterparty_name = op["DebtorParty"].get("name")
 
-            # дата операции
             operation_date_raw = op.get("documentProcessDate")
 
             if not operation_date_raw:
@@ -170,7 +198,8 @@ class TochkaSyncService:
             except Exception:
                 continue
 
-            account_number = account_id
+            account_id = op.get("accountId")
+            account_number = account_id.split("/")[0] if account_id else None
 
             dto = OperationImportDTO(
                 document_number=op.get("transactionId"),
@@ -188,9 +217,7 @@ class TochkaSyncService:
 
             dtos.append(dto)
 
-        # ---- импорт операций ----
-
-        
+        # 9. импортируем операции
         service = ImportService(db)
 
         batch = service.import_operations(
@@ -198,10 +225,6 @@ class TochkaSyncService:
             company_id=company_id,
             filename="tochka_api"
         )
-
-        # 9. обновляем время синхронизации
-        connection.last_synced_at = datetime.utcnow()
-        db.commit()
 
         return {
             "status": "success",

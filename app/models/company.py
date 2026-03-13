@@ -15,10 +15,15 @@ class Company(Base):
         primary_key=True,
         default=uuid4
     )
+
     bank_operations = relationship(
-    "BankOperation",
-    back_populates="company",
-    cascade="all, delete-orphan"
+        "BankOperation",
+        back_populates="company",
+        cascade="all, delete-orphan"
     )
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     inn: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
+
+    status: Mapped[str] = mapped_column(String(50), default="reserved")
