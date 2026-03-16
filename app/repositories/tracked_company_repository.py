@@ -26,31 +26,37 @@ class TrackedCompanyRepository:
 
     def get_all_tracked_grouped(self, db: Session):
 
-        rows = (
-            db.query(
-                User.name,
-                TrackedCompany.id,
-                Company.name,
-                Company.inn
-            )
-            .join(TrackedCompany, TrackedCompany.manager_id == User.id)
-            .join(Company, Company.id == TrackedCompany.company_id)
-            .filter(TrackedCompany.active == True)
-            .all()
-        )
+        users = db.query(User).all()
 
         result = {}
 
-        for manager_name, tracked_id, company_name, inn in rows:
+        for user in users:
 
-            if manager_name not in result:
-                result[manager_name] = []
+            manager_name = user.name or "Менеджер"
 
-            result[manager_name].append({
-                "tracked_id": str(tracked_id),
-                "name": company_name if company_name else "Без названия",
-                "inn": inn
-            })
+            companies = (
+                db.query(
+                    TrackedCompany.id,
+                    Company.name,
+                    Company.inn
+                )
+                .join(Company, Company.id == TrackedCompany.company_id)
+                .filter(
+                    TrackedCompany.manager_id == user.id,
+                    TrackedCompany.active == True
+                )
+                .all()
+            )
+
+            result[manager_name] = []
+
+            for tracked_id, name, inn in companies:
+
+                result[manager_name].append({
+                    "tracked_id": str(tracked_id),
+                    "name": name if name else "Без названия",
+                    "inn": inn
+                })
 
         return result
 
@@ -68,3 +74,12 @@ class TrackedCompanyRepository:
         )
 
         return existing is not None
+    
+    def revoke_access(self, db: Session, tracked_id: str):
+
+        tracked = db.query(TrackedCompany).filter(
+            TrackedCompany.id == tracked_id
+        ).first()
+
+        if tracked:
+            tracked.active = False

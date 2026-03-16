@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.dependencies import get_db
-from app.services.tochka_sync_service import TochkaSyncService
+from app.services.operation_sync_service import OperationSyncService
 
 router = APIRouter(prefix="/sync", tags=["bank sync"])
 
@@ -13,9 +13,8 @@ def sync_tochka(
     db: Session = Depends(get_db)
 ):
 
-    result = TochkaSyncService.sync_company(
-        db=db,
-        company_id=company_id
-    )
+    service = OperationSyncService(db)
 
-    return result
+    service.sync_operations()
+
+    return {"status": "sync_started"}

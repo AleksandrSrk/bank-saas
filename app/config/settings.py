@@ -1,27 +1,25 @@
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from pydantic_settings import BaseSettings
 
 
-class Settings:
+class Settings(BaseSettings):
 
-    DATABASE_URL = os.getenv("DATABASE_URL")
+    DATABASE_URL: str
 
-    # OAuth приложения
-    TOCHKA_CLIENT_ID = os.getenv("TOCHKA_CLIENT_ID")
-    TOCHKA_CLIENT_SECRET = os.getenv("TOCHKA_CLIENT_SECRET")
+    TELEGRAM_BOT_TOKEN: str
 
-    # API endpoints
-    TOCHKA_API_URL = os.getenv(
-        "TOCHKA_API_URL",
-        "https://enter.tochka.com/upapi/open-banking/v1.0"
-    )
+    # Tochka
+    TOCHKA_CLIENT_ID: str | None = None
+    TOCHKA_CLIENT_SECRET: str | None = None
 
-    TOCHKA_TOKEN_URL = os.getenv(
-        "TOCHKA_TOKEN_URL",
-        "https://enter.tochka.com/connect/token"
-    )
+    TOCHKA_API_URL: str = "https://enter.tochka.com/uapi/open-banking/v1.0"
+    TOCHKA_TOKEN_URL: str = "https://enter.tochka.com/connect/token"
+
+    # DaData
+    DADATA_API_KEY: str
+    DADATA_SECRET_KEY: str
+
+    class Config:
+        env_file = ".env"
 
 
 settings = Settings()

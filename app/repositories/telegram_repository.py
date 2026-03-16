@@ -1,0 +1,2 @@
+class TelegramRepository:
+    pass

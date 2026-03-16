@@ -1,24 +1,22 @@
-# =========================
 # Python
-# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Distribution
-build/
-dist/
-*.egg-info/
-.eggs/
-
 # Virtual environment
 venv/
-.venv/
-
 # Environment variables
 .env
 .env.*
 !.env.example
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
 
 # IDE
 .vscode/
@@ -28,25 +26,17 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Alembic
+alembic/versions/__pycache__/
 
-# Pytest
+# Pytest / coverage
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Alembic cache
-migrations/__pycache__/
+# mypy / type checking
+.mypy_cache/
 
-ARCHITECTURE_NOTES.md
-
-# env files
-.env
-.env.*
-
-__pycache__/
-*.pyc
-.env
-venv/
-.venv/
+# pip
+pip-log.txt
+pip-delete-this-directory.txt

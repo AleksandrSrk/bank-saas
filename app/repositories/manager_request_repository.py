@@ -55,28 +55,33 @@ class ManagerRequestRepository:
             .first()
         )
 
-        company_name = None
+        if not company:
+            raise Exception(f"Company with INN {request.inn} not found")
 
-        if company:
+        company_name = company.name
 
-            company_name = company.name
+        existing = (
+            db.query(TrackedCompany)
+            .filter(
+                TrackedCompany.manager_id == request.manager_id,
+                TrackedCompany.company_id == company.id
+            )
+            .first()
+        )
 
-            existing = (
-                db.query(TrackedCompany)
-                .filter(
-                    TrackedCompany.manager_id == request.manager_id,
-                    TrackedCompany.company_id == company.id
-                )
-                .first()
+        if existing:
+            # если запись была, просто активируем её
+            existing.active = True
+
+        else:
+            # если не было — создаём новую
+            tracked_company = TrackedCompany(
+                manager_id=request.manager_id,
+                company_id=company.id,
+                active=True
             )
 
-            if not existing:
-                tracked_company = TrackedCompany(
-                    manager_id=request.manager_id,
-                    company_id=company.id
-                )
-
-                db.add(tracked_company)
+            db.add(tracked_company)
 
         db.flush()
 

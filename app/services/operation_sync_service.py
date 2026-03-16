@@ -1,17 +1,15 @@
-from datetime import datetime
-
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.integrations.banks.tochka.client import TochkaClient
 from app.models.bank_account import BankAccount
 from app.models.bank_operation import BankOperation
-import uuid
+from app.models.operation_batch import OperationBatch
 
 
 class OperationSyncService:
 
     def __init__(self, db: Session):
-
         self.db = db
         self.client = TochkaClient(db)
 
@@ -21,77 +19,157 @@ class OperationSyncService:
 
         for account in accounts:
 
-            if account.last_synced_at:
-                start_date = account.last_synced_at.strftime("%Y-%m-%d")
-            else:
-                start_date = "2023-01-01"
+            now = datetime.utcnow()
 
-            end_date = datetime.utcnow().strftime("%Y-%m-%d")
+            # ---------- период синхронизации ----------
+
+            if account.last_synced_at:
+
+                start_date = account.last_synced_at - timedelta(days=1)
+
+            else:
+
+                start_date = now.replace(year=now.year - 1)
+
+            end_date = now
+
+            # ---------- получаем statement ----------
 
             statement_id = self.client.create_statement(
-                account.bank_account_id,
-                start_date,
-                end_date
+                account.account_number,
+                start_date.strftime("%Y-%m-%d"),
+                end_date.strftime("%Y-%m-%d")
             )
 
             transactions = self.client.get_transactions(statement_id)
 
             print(
-                f"Account {account.bank_account_id} "
-                f"transactions: {len(transactions)}"
+                f"Account {account.account_number} transactions: {len(transactions)}"
             )
 
+            if not transactions:
+                account.last_synced_at = now
+                continue
+
+            # ---------- создаём batch ----------
+
+            batch = OperationBatch(
+                company_id=account.company_id,
+                source_type="bank_api",
+                total_count=len(transactions),
+                status="processing"
+            )
+
+            self.db.add(batch)
+            self.db.flush()
+
+            inserted = 0
+            duplicates = 0
+
             for tx in transactions:
+
+                amount = tx.get("Amount", {}).get("amount")
+
+                if not amount:
+                    continue
+
+                direction = (
+                    "incoming"
+                    if tx.get("creditDebitIndicator") == "Credit"
+                    else "outgoing"
+                )
+
+                operation_date_raw = tx.get("documentProcessDate")
+
+                if not operation_date_raw:
+                    continue
+
+                operation_date = datetime.strptime(
+                    operation_date_raw,
+                    "%Y-%m-%d"
+                )
+
+                document_number = tx.get("transactionId")
+
+                # ---------- проверка дублей ----------
+
                 existing = self.db.query(BankOperation).filter_by(
-                    company_id=uuid.UUID("7da25e26-689d-4bff-ab3d-5bcb444b69af"),
-                    document_number=tx.get("documentNumber", "unknown"),
-                    document_type=tx.get("transactionTypeCode", "bank_operation"),
-                    operation_date=tx["documentProcessDate"],
-                    amount=tx["Amount"]["amount"],
-                    direction="incoming" if tx["creditDebitIndicator"] == "Credit" else "outgoing"
+                    company_id=account.company_id,
+                    document_number=document_number,
+                    document_type="bank_payment",
+                    operation_date=operation_date,
+                    amount=amount,
+                    direction=direction
                 ).first()
 
                 if existing:
+                    duplicates += 1
                     continue
+
+                # ---------- определяем контрагента ----------
+
+                if direction == "incoming":
+
+                    counterparty_account = tx.get(
+                        "DebtorAccount", {}
+                    ).get("identification")
+
+                    counterparty_inn = tx.get(
+                        "DebtorParty", {}
+                    ).get("inn")
+
+                    counterparty_name = tx.get(
+                        "DebtorParty", {}
+                    ).get("name")
+
+                else:
+
+                    counterparty_account = tx.get(
+                        "CreditorAccount", {}
+                    ).get("identification")
+
+                    counterparty_inn = tx.get(
+                        "CreditorParty", {}
+                    ).get("inn")
+
+                    counterparty_name = tx.get(
+                        "CreditorParty", {}
+                    ).get("name")
+
+                # ---------- создаём операцию ----------
 
                 operation = BankOperation(
 
-                    company_id=uuid.UUID("7da25e26-689d-4bff-ab3d-5bcb444b69af"),
+                    company_id=account.company_id,
+                    import_batch_id=batch.id,
 
-                    # import_batch_id=None,
+                    document_number=document_number,
+                    document_type="bank_payment",
 
-                    document_number=tx.get("documentNumber", "unknown"),
-                    document_type=tx.get("transactionTypeCode", "bank_operation"),
+                    amount=amount,
+                    direction=direction,
 
-                    amount=tx["Amount"]["amount"],
+                    operation_date=operation_date,
+                    document_date=operation_date.date(),
 
-                    direction="incoming"
-                    if tx["creditDebitIndicator"] == "Credit"
-                    else "outgoing",
+                    account_number=account.account_number,
 
-                    operation_date=tx["documentProcessDate"],
-
-                    document_date=tx.get("documentProcessDate"),
-
-                    account_number=account.bank_account_id,
-
-                    counterparty_account=(
-                        tx.get("CreditorAccount", {}).get("identification")
-                    ),
-
-                    counterparty_inn=(
-                        tx.get("CreditorParty", {}).get("inn")
-                    ),
-
-                    counterparty_name=(
-                        tx.get("CreditorParty", {}).get("name")
-                    ),
+                    counterparty_account=counterparty_account,
+                    counterparty_inn=counterparty_inn,
+                    counterparty_name=counterparty_name,
 
                     description=tx.get("description")
                 )
 
                 self.db.add(operation)
+                inserted += 1
 
-            account.last_synced_at = datetime.utcnow()
+            # ---------- финализация batch ----------
+
+            batch.inserted_count = inserted
+            batch.duplicate_count = duplicates
+            batch.status = "success"
+
+            account.last_synced_at = now
 
         self.db.commit()

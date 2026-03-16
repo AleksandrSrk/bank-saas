@@ -3,6 +3,8 @@ import requests
 
 from app.config.settings import settings
 from app.services.bank_connection_service import BankConnectionService
+from app.services.bank_token_service import BankTokenService
+from app.integrations.banks.tochka.config import TOCHKA_BIC
 
 
 class TochkaClient:
@@ -10,18 +12,19 @@ class TochkaClient:
     def __init__(self, db):
 
         self.db = db
-
-        self.client_id = settings.TOCHKA_CLIENT_ID
-        self.client_secret = settings.TOCHKA_CLIENT_SECRET
-
-        self.as_url = settings.TOCHKA_AS_URL
-        self.rs_url = settings.TOCHKA_RS_URL
+        self.rs_url = settings.TOCHKA_API_URL
 
         connection = BankConnectionService.get_connection(db, "tochka")
 
+        if not connection:
+            raise Exception("Tochka connection not found")
+
         self.connection = connection
-        self.access_token = connection.access_token
-        self.refresh_token = connection.refresh_token
+
+        self.access_token = BankTokenService.ensure_valid_token(
+            db,
+            connection
+        )
 
     def _headers(self):
 
@@ -41,8 +44,12 @@ class TochkaClient:
             **kwargs
         )
 
-        if response.status_code == 401:
-            self.refresh_access_token()
+        if response.status_code in (401, 403):
+
+            self.access_token = BankTokenService.ensure_valid_token(
+                self.db,
+                self.connection
+            )
 
             response = requests.request(
                 method,
@@ -53,45 +60,17 @@ class TochkaClient:
 
         response.raise_for_status()
 
-        return response.json()
+        if response.text:
+            return response.json()
 
-    def refresh_access_token(self):
+        return {}
 
-        url = f"{self.as_url}/connect/token"
+    def build_account_id(self, account_number: str) -> str:
+        return f"{account_number}/{TOCHKA_BIC}"
 
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": self.refresh_token,
-            "client_id": self.client_id,
-            "client_secret": self.client_secret
-        }
+    def create_statement(self, account_number, start_date, end_date):
 
-        response = requests.post(url, data=data)
-
-        response.raise_for_status()
-
-        token_data = response.json()
-
-        self.access_token = token_data["access_token"]
-        self.refresh_token = token_data["refresh_token"]
-
-        BankConnectionService.update_tokens(
-            self.db,
-            self.connection,
-            token_data["access_token"],
-            token_data["refresh_token"],
-            token_data["expires_in"]
-        )
-
-        return token_data
-
-    def get_accounts(self):
-
-        url = f"{self.rs_url}/open-banking/v1.0/accounts"
-
-        return self._request("GET", url)
-
-    def create_statement(self, account_id, start_date, end_date):
+        account_id = self.build_account_id(account_number)
 
         url = f"{self.rs_url}/open-banking/v1.0/statements"
 
@@ -105,7 +84,11 @@ class TochkaClient:
             }
         }
 
-        data = self._request("POST", url, json=payload)
+        data = self._request(
+            "POST",
+            url,
+            json=payload
+        )
 
         return data["Data"]["Statement"]["statementId"]
 
@@ -117,28 +100,38 @@ class TochkaClient:
             "statementId": statement_id
         }
 
-        return self._request("GET", url, params=params)
+        return self._request(
+            "GET",
+            url,
+            params=params
+        )
 
     def wait_statement_ready(self, statement_id, timeout=60):
 
-        start_time = time.time()
+        start = time.time()
 
         while True:
 
             data = self.get_statement(statement_id)
 
-            status = data["Data"]["Statement"][0]["status"]
+            statements = data.get("Data", {}).get("Statement", [])
+
+            if not statements:
+                time.sleep(2)
+                continue
+
+            status = statements[0]["status"]
 
             if status == "Ready":
-                return data
+                return statements[0]
 
-            if time.time() - start_time > timeout:
-                raise TimeoutError("Statement generation timeout")
+            if time.time() - start > timeout:
+                raise TimeoutError("Statement timeout")
 
             time.sleep(3)
 
     def get_transactions(self, statement_id):
 
-        data = self.wait_statement_ready(statement_id)
+        statement = self.wait_statement_ready(statement_id)
 
-        return data["Data"]["Statement"][0]["Transaction"]
+        return statement.get("Transaction", [])

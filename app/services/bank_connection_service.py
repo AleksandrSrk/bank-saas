@@ -34,3 +34,13 @@ class BankConnectionService:
         db.refresh(connection)
 
         return connection
+    
+    @staticmethod
+    def get_connection(db: Session, bank_name: str):
+        return (
+                db.query(BankConnection)
+                .filter(BankConnection.bank_name == bank_name)
+                .first()
+            )
+
+            
