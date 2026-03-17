@@ -13,10 +13,18 @@ class BankAccount(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
+    # ❗ пока оставляем (переходный этап)
     company_id = Column(
         UUID(as_uuid=True),
         ForeignKey("companies.id"),
         nullable=False
+    )
+
+    # ✅ НОВОЕ ПРАВИЛЬНОЕ ПОЛЕ
+    legal_entity_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("legal_entities.id"),
+        nullable=True
     )
 
     bank_connection_id = Column(

@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.models.bank_operation import BankOperation
-from app.models.company import Company
-from app.models.tracked_company import TrackedCompany
+from app.models.user_company import UserCompany
 
 
 class BankOperationRepository:
@@ -14,38 +13,39 @@ class BankOperationRepository:
         db: Session,
         manager_id,
         inn: str,
-        days: int
+        days: int,
+        details: bool = False
     ):
 
-        company = (
-            db.query(Company)
-            .filter(Company.inn == inn)
-            .first()
-        )
+        # ------------------------------------------------
+        # получаем доступные юрлица менеджера
+        # ------------------------------------------------
 
-        if not company:
-            return None
-
-        access = (
-            db.query(TrackedCompany)
+        user_entities = (
+            db.query(UserCompany.legal_entity_id)
             .filter(
-                TrackedCompany.manager_id == manager_id,
-                TrackedCompany.company_id == company.id,
-                TrackedCompany.active == True
+                UserCompany.user_id == manager_id,
+                UserCompany.legal_entity_id != None
             )
-            .first()
+            .all()
         )
 
-        if not access:
+        entity_ids = [e[0] for e in user_entities]
+
+        if not entity_ids:
             return None
 
         # ------------------------------------------------
-        # определяем дату последней операции
+        # определяем последнюю операцию по этим юрлицам
         # ------------------------------------------------
 
         last_operation = (
             db.query(func.max(BankOperation.operation_date))
-            .filter(BankOperation.company_id == company.id)
+            .filter(
+                BankOperation.legal_entity_id.in_(entity_ids),
+                BankOperation.counterparty_inn == inn,
+                BankOperation.is_internal == False
+            )
             .scalar()
         )
 
@@ -61,12 +61,17 @@ class BankOperationRepository:
         operations = (
             db.query(BankOperation)
             .filter(
-                BankOperation.company_id == company.id,
+                BankOperation.counterparty_inn == inn,
+                BankOperation.legal_entity_id.in_(entity_ids),
+                BankOperation.is_internal == False,
                 BankOperation.operation_date >= date_from
             )
             .order_by(BankOperation.operation_date.desc())
             .all()
         )
+
+        if not operations:
+            return None
 
         # ------------------------------------------------
         # агрегаты
@@ -75,7 +80,9 @@ class BankOperationRepository:
         total_in = (
             db.query(func.coalesce(func.sum(BankOperation.amount), 0))
             .filter(
-                BankOperation.company_id == company.id,
+                BankOperation.counterparty_inn == inn,
+                BankOperation.legal_entity_id.in_(entity_ids),
+                BankOperation.is_internal == False,
                 BankOperation.operation_date >= date_from,
                 BankOperation.direction == "incoming"
             )
@@ -85,7 +92,9 @@ class BankOperationRepository:
         total_out = (
             db.query(func.coalesce(func.sum(BankOperation.amount), 0))
             .filter(
-                BankOperation.company_id == company.id,
+                BankOperation.counterparty_inn == inn,
+                BankOperation.legal_entity_id.in_(entity_ids),
+                BankOperation.is_internal == False,
                 BankOperation.operation_date >= date_from,
                 BankOperation.direction == "outgoing"
             )
@@ -93,24 +102,24 @@ class BankOperationRepository:
         )
 
         # ------------------------------------------------
-        # название компании
+        # название контрагента
         # ------------------------------------------------
 
-        company_name = company.name
+        company_name = None
 
-        if not company_name:
-
-            op = (
-                db.query(BankOperation.counterparty_name)
-                .filter(BankOperation.company_id == company.id)
-                .filter(BankOperation.counterparty_name != None)
-                .first()
+        op = (
+            db.query(BankOperation.counterparty_name)
+            .filter(
+                BankOperation.counterparty_inn == inn,
+                BankOperation.counterparty_name != None
             )
+            .first()
+        )
 
-            if op:
-                company_name = op[0]
-            else:
-                company_name = "Компания"
+        if op:
+            company_name = op[0]
+        else:
+            company_name = "Компания"
 
         # ------------------------------------------------
         # список операций
@@ -120,13 +129,24 @@ class BankOperationRepository:
 
         for op in operations:
 
-            result.append({
-                "date": op.operation_date.strftime("%Y-%m-%d"),
-                "amount": float(op.amount),
-                "direction": op.direction,
-                "counterparty": op.counterparty_name,
-                "description": op.description
-            })
+            if details:
+                result.append({
+                    "date": op.operation_date.strftime("%Y-%m-%d"),
+                    "amount": float(op.amount),
+                    "direction": op.direction,
+                    "counterparty": op.counterparty_name,
+                    "description": op.description
+                })
+            else:
+                result.append({
+                    "date": op.operation_date.strftime("%Y-%m-%d"),
+                    "amount": float(op.amount),
+                    "direction": op.direction
+                })
+
+        # ------------------------------------------------
+        # ответ
+        # ------------------------------------------------
 
         return {
             "company_name": company_name,

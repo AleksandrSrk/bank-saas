@@ -14,6 +14,9 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.database import Base
+from sqlalchemy import Boolean
+
+
 
 
 class BankOperation(Base):
@@ -92,4 +95,17 @@ class BankOperation(Base):
         ),
         Index("idx_operation_company_date", "company_id", "operation_date"),
         Index("idx_operation_company_inn", "company_id", "counterparty_inn"),
+    )
+
+    is_internal = Column(Boolean, nullable=True)
+
+    counterparty_legal_entity_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("legal_entities.id"),
+        nullable=True
+    )
+    legal_entity_id = Column(
+    UUID(as_uuid=True),
+    ForeignKey("legal_entities.id"),
+    nullable=True
     )

@@ -24,7 +24,7 @@ def start_scheduler():
     scheduler.add_job(
         run_bank_sync,
         "interval",
-        minutes=1
+        minutes=0.1
     )
 
-    scheduler.start()
+    # scheduler.start()

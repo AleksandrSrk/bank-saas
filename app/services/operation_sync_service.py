@@ -5,7 +5,8 @@ from app.integrations.banks.tochka.client import TochkaClient
 from app.models.bank_account import BankAccount
 from app.models.bank_operation import BankOperation
 from app.models.operation_batch import OperationBatch
-
+from app.models.legal_entity import LegalEntity
+from app.models.company import Company
 
 class OperationSyncService:
 
@@ -54,7 +55,7 @@ class OperationSyncService:
             # ---------- создаём batch ----------
 
             batch = OperationBatch(
-                company_id=account.company_id,
+                company_id=None,
                 source_type="bank_api",
                 total_count=len(transactions),
                 status="processing"
@@ -91,20 +92,7 @@ class OperationSyncService:
 
                 document_number = tx.get("transactionId")
 
-                # ---------- проверка дублей ----------
 
-                existing = self.db.query(BankOperation).filter_by(
-                    company_id=account.company_id,
-                    document_number=document_number,
-                    document_type="bank_payment",
-                    operation_date=operation_date,
-                    amount=amount,
-                    direction=direction
-                ).first()
-
-                if existing:
-                    duplicates += 1
-                    continue
 
                 # ---------- определяем контрагента ----------
 
@@ -136,11 +124,58 @@ class OperationSyncService:
                         "CreditorParty", {}
                     ).get("name")
 
+                # ---------- проверка: наше юрлицо ----------
+
+                our_entity = None
+
+                if counterparty_inn:
+                    our_entity = self.db.query(LegalEntity).filter(
+                        LegalEntity.inn == counterparty_inn
+                    ).first()
+                # ---------- создаём операцию ----------
+
+                # ---------- ищем или создаём компанию ----------
+
+                company = None
+
+                if counterparty_inn:
+                    company = (
+                        self.db.query(Company)
+                        .filter(Company.inn == counterparty_inn)
+                        .first()
+                    )
+
+                    if not company:
+                        company = Company(
+                            inn=counterparty_inn,
+                            name=counterparty_name or f"INN {counterparty_inn}",
+                            status="from_operations"
+                        )
+                        self.db.add(company)
+                        self.db.flush()
+
+                # ---------- проверка дублей ----------
+
+                existing = self.db.query(BankOperation).filter_by(
+                    company_id=company.id if company else None,  # оставить старое
+                    legal_entity_id=account.legal_entity_id,  # новое,
+                    document_number=document_number,
+                    document_type="bank_payment",
+                    operation_date=operation_date,
+                    amount=amount,
+                    direction=direction
+                ).first()
+
+                if existing:
+                    duplicates += 1
+                    continue
+
                 # ---------- создаём операцию ----------
 
                 operation = BankOperation(
 
-                    company_id=account.company_id,
+                    company_id=company.id if company else None,
+                    legal_entity_id=account.legal_entity_id,
                     import_batch_id=batch.id,
 
                     document_number=document_number,
@@ -157,6 +192,11 @@ class OperationSyncService:
                     counterparty_account=counterparty_account,
                     counterparty_inn=counterparty_inn,
                     counterparty_name=counterparty_name,
+
+                    is_internal=our_entity is not None,
+                    counterparty_legal_entity_id=(
+                        our_entity.id if our_entity else None
+                    ),
 
                     description=tx.get("description")
                 )

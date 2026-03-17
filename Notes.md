@@ -21,3 +21,6 @@ alembic revision --autogenerate -m "..."
 
 # Запуск бота тлг 
 python -m bot.telegram_bot
+
+# Запуск мануал синк
+python tests/manual_sync.py
