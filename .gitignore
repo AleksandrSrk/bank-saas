@@ -40,3 +40,7 @@ htmlcov/
 # pip
 pip-log.txt
 pip-delete-this-directory.txt
+
+tests/fixtures/
+.env
+*.sql
