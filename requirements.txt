@@ -28,3 +28,4 @@ urllib3==2.6.3
 uvicorn==0.41.0
 dadata==21.10.1
 pydantic-settings==2.2.1
+APScheduler==3.10.4
