@@ -22,3 +22,9 @@ import app.models.user_role
 import app.models.telegram_account
 import app.models.operation_batch
 import app.models.manager_request
+
+import app.models.bank_connection
+import app.models.bank_account
+import app.models.tracked_company
+import app.models.user_company
+import app.models.legal_entity
