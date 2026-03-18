@@ -2,9 +2,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.db.database import SessionLocal
 from app.services.operation_sync_service import OperationSyncService
-
+from app.services.account_sync_service import AccountSyncService
 
 scheduler = BackgroundScheduler()
+
+
 
 
 def run_bank_sync():
@@ -14,8 +16,14 @@ def run_bank_sync():
     db = SessionLocal()
 
     try:
-        service = OperationSyncService(db)
-        service.sync_operations()
+        # 1. СНАЧАЛА счета
+        account_service = AccountSyncService(db)
+        account_service.sync_accounts()
+
+        # 2. ПОТОМ операции
+        operation_service = OperationSyncService(db)
+        operation_service.sync_operations()
+
         print("✅ Sync finished")
 
     except Exception as e:
