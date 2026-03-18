@@ -1,8 +1,16 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 
-DATABASE_URL = "postgresql://bank_user:bank_pass@postgres:5432/bank_saas"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set")
 
 
 class Base(DeclarativeBase):
@@ -13,6 +21,8 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 SessionLocal = sessionmaker(bind=engine)
 
+
+# --- IMPORT ALL MODELS (обязательно) ---
 import app.models.company
 import app.models.bank_operation
 
