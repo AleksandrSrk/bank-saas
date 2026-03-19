@@ -55,7 +55,7 @@ class OperationSyncService:
             # ---------- создаём batch ----------
 
             batch = OperationBatch(
-                company_id=None,
+                company_id=account.company_id,
                 source_type="bank_api",
                 total_count=len(transactions),
                 status="processing"

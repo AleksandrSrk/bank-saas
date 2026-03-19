@@ -352,17 +352,53 @@ def get_company_operations(
     if not company:
         return {"error": "company_not_found"}
 
-    access = (
-        db.query(UserCompany)
-        .filter(
-            UserCompany.user_id == user_id,
-            UserCompany.company_id == company.id
-        )
-        .first()
+    # access = (
+    #     db.query(UserCompany)
+    #     .filter(
+    #         UserCompany.user_id == user_id,
+    #         UserCompany.company_id == company.id
+    #     )
+    #     .first()
+    # )
+
+    # if not access:
+    #     return {"error": "access_denied"}
+    # --- получаем доступные юрлица пользователя
+    user_entities = (
+        db.query(UserCompany.legal_entity_id)
+        .filter(UserCompany.user_id == user_id)
+        .all()
     )
 
-    if not access:
-        return {"error": "access_denied"}
+    user_entity_ids = {e[0] for e in user_entities if e[0]}
+
+    # if not user_entity_ids:
+    #     return {"error": "access_denied"}
+
+
+    # --- проверяем есть ли операции по этим юрлицам
+    from app.models.bank_operation import BankOperation
+
+    # has_access = (
+    #     db.query(BankOperation.id)
+    #     .filter(
+    #         BankOperation.company_id == company.id,
+    #         BankOperation.legal_entity_id.in_(user_entity_ids)
+    #     )
+    #     .first()
+    # )
+
+    # if not has_access:
+    #     return {"error": "access_denied"}
+    repo = BankOperationRepository()
+
+    return repo.get_operations_for_period(
+        db=db,
+        manager_id=user_id,
+        inn=inn,
+        days=days,
+        details=details
+    )
 
     repo = BankOperationRepository()
 

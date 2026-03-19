@@ -170,24 +170,29 @@ async def show_operations(callback: types.CallbackQuery):
 
     data = response.json()
 
+    # 🔴 НЕТ ДОСТУПА
+    if data.get("error") == "access_denied":
+        await callback.message.edit_text(
+            "🔒 У вас нет доступа к этому юрлицу"
+        )
+        await callback.answer()
+        return
+
     operations = data.get("operations", [])
     name = data.get("company_name", "Компания")
 
+    # 🟡 НЕТ ОПЕРАЦИЙ
     if not operations:
-
         await callback.message.edit_text(
             f"{name}\n\n❌ За {days} дней нет операций"
         )
-
         await callback.answer()
         return
 
     text = f"{name}\nза {days} дней\n\n"
 
     for op in operations[:10]:
-
         sign = "+" if op["direction"] == "incoming" else "-"
-
         text += f"{op['date']}  {sign}{op['amount']}\n"
 
     text += "\n"
@@ -206,7 +211,6 @@ async def show_operations(callback: types.CallbackQuery):
     )
 
     await callback.message.edit_text(text, reply_markup=keyboard)
-
     await callback.answer()
 
 #____________________детали операций____________________
@@ -229,29 +233,33 @@ async def show_details(callback: types.CallbackQuery):
 
     data = response.json()
 
+    # 🔴 НЕТ ДОСТУПА
+    if data.get("error") == "access_denied":
+        await callback.message.edit_text(
+            "🔒 У вас нет доступа к этому юрлицу"
+        )
+        await callback.answer()
+        return
+
     name = data.get("company_name", "Компания")
     operations = data.get("operations", [])
 
+    # 🟡 НЕТ ОПЕРАЦИЙ
     if not operations:
-
         await callback.message.edit_text(
             f"{name}\n\n❌ Нет операций"
         )
-
         await callback.answer()
         return
 
     text = f"{name}\nдетали\n\n"
 
     for op in operations[:10]:
-
         sign = "+" if op["direction"] == "incoming" else "-"
-
         text += f"{op['date']} {sign}{op['amount']}\n"
         text += f"{op['description']}\n\n"
 
     await callback.message.edit_text(text)
-
     await callback.answer()
 
 #____________________компания____________________
@@ -799,7 +807,29 @@ async def save_legal_entities(callback: CallbackQuery):
 
     _, user_id = callback.data.split(":")
 
-    # --- подтверждаем регистрацию
+    print("SAVING ACCESS FOR USER:", user_id)
+
+    # --- получаем текущие выбранные юрлица
+    resp = requests.get(f"{API_URL}/users/{user_id}/legal_entities")
+
+    if resp.status_code != 200:
+        await callback.message.answer("Ошибка загрузки юрлиц")
+        return
+
+    entities = resp.json()
+
+    selected_ids = [
+        e["legal_entity_id"]
+        for e in entities if e["has_access"]
+    ]
+
+    # --- сохраняем доступы
+    requests.post(
+        f"{API_URL}/users/{user_id}/legal_entities",
+        json=selected_ids
+    )
+
+    # --- подтверждаем регистрацию (если новый пользователь)
     pending = requests.get(f"{API_URL}/users/pending").json()
 
     user_request = next(

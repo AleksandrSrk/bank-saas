@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -18,7 +18,45 @@ class BankOperationRepository:
     ):
 
         # ------------------------------------------------
-        # получаем доступные юрлица менеджера
+        # получаем название компании
+        # ------------------------------------------------
+
+        company_name_row = (
+            db.query(BankOperation.counterparty_name)
+            .filter(
+                BankOperation.counterparty_inn == inn,
+                BankOperation.counterparty_name != None
+            )
+            .first()
+        )
+
+        company_name = company_name_row[0] if company_name_row else "Компания"
+
+        # ------------------------------------------------
+        # есть ли вообще операции по этой компании
+        # ------------------------------------------------
+
+        has_any_operations = (
+            db.query(BankOperation.id)
+            .filter(
+                BankOperation.counterparty_inn == inn,
+                BankOperation.is_internal == False
+            )
+            .first()
+        )
+
+        # ❗ НОВАЯ / "подвешенная" компания
+        if not has_any_operations:
+            return {
+                "company_name": company_name,
+                "inn": inn,
+                "total_in": 0,
+                "total_out": 0,
+                "operations": []
+            }
+
+        # ------------------------------------------------
+        # доступные юрлица менеджера
         # ------------------------------------------------
 
         user_entities = (
@@ -32,30 +70,45 @@ class BankOperationRepository:
 
         entity_ids = [e[0] for e in user_entities]
 
+        # ❗ вообще нет доступа к юрлицам
         if not entity_ids:
-            return None
+            if not has_any_operations:
+                return {
+                    "company_name": company_name,
+                    "inn": inn,
+                    "total_in": 0,
+                    "total_out": 0,
+                    "operations": []
+                }
+
+            return {"error": "access_denied"}
 
         # ------------------------------------------------
-        # определяем последнюю операцию по этим юрлицам
+        # есть ли операции в ДОСТУПНЫХ юрлицах
         # ------------------------------------------------
 
-        last_operation = (
-            db.query(func.max(BankOperation.operation_date))
+        has_accessible_operations = (
+            db.query(BankOperation.id)
             .filter(
-                BankOperation.legal_entity_id.in_(entity_ids),
                 BankOperation.counterparty_inn == inn,
+                BankOperation.legal_entity_id.in_(entity_ids),
                 BankOperation.is_internal == False
             )
-            .scalar()
+            .first()
         )
 
-        if not last_operation:
-            return None
-
-        date_from = last_operation - timedelta(days=days)
+        # ❗ операции есть, но не в твоих юрлицах → доступ запрещён
+        if not has_accessible_operations:
+            return {"error": "access_denied"}
 
         # ------------------------------------------------
-        # операции
+        # период
+        # ------------------------------------------------
+
+        date_from = datetime.utcnow() - timedelta(days=days)
+
+        # ------------------------------------------------
+        # операции за период
         # ------------------------------------------------
 
         operations = (
@@ -70,8 +123,18 @@ class BankOperationRepository:
             .all()
         )
 
+        # ------------------------------------------------
+        # если в периоде нет операций
+        # ------------------------------------------------
+
         if not operations:
-            return None
+            return {
+                "company_name": company_name,
+                "inn": inn,
+                "total_in": 0,
+                "total_out": 0,
+                "operations": []
+            }
 
         # ------------------------------------------------
         # агрегаты
@@ -102,27 +165,7 @@ class BankOperationRepository:
         )
 
         # ------------------------------------------------
-        # название контрагента
-        # ------------------------------------------------
-
-        company_name = None
-
-        op = (
-            db.query(BankOperation.counterparty_name)
-            .filter(
-                BankOperation.counterparty_inn == inn,
-                BankOperation.counterparty_name != None
-            )
-            .first()
-        )
-
-        if op:
-            company_name = op[0]
-        else:
-            company_name = "Компания"
-
-        # ------------------------------------------------
-        # список операций
+        # формирование ответа
         # ------------------------------------------------
 
         result = []
@@ -143,10 +186,6 @@ class BankOperationRepository:
                     "amount": float(op.amount),
                     "direction": op.direction
                 })
-
-        # ------------------------------------------------
-        # ответ
-        # ------------------------------------------------
 
         return {
             "company_name": company_name,

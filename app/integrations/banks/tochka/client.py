@@ -135,3 +135,11 @@ class TochkaClient:
         statement = self.wait_statement_ready(statement_id)
 
         return statement.get("Transaction", [])
+    
+    def get_accounts(self):
+
+        url = f"{self.rs_url}/open-banking/v1.0/accounts"
+
+        data = self._request("GET", url)
+
+        return data

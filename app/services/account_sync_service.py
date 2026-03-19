@@ -19,10 +19,11 @@ class AccountSyncService:
         for acc in accounts:
 
             account_id = acc["accountId"]
+            account_number = account_id.split("/")[0]
 
             existing = (
                 self.db.query(BankAccount)
-                .filter(BankAccount.bank_account_id == account_id)
+                .filter(BankAccount.account_number == account_number)
                 .first()
             )
 
@@ -30,11 +31,10 @@ class AccountSyncService:
                 continue
 
             new_account = BankAccount(
-                bank_account_id=account_id,
-                currency=acc["currency"],
-                account_type=acc["accountType"],
-                account_sub_type=acc["accountSubType"],
-                status=acc["status"]
+                company_id=self.client.connection.company_id,
+                bank_connection_id=self.client.connection.id,
+                account_number=account_number,
+                currency=acc["currency"]
             )
 
             self.db.add(new_account)
