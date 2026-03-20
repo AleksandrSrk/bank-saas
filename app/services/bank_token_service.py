@@ -5,6 +5,9 @@ from app.models.bank_connection import BankConnection
 from app.config.settings import settings
 
 
+from requests.auth import HTTPBasicAuth
+
+
 class BankTokenService:
 
     @staticmethod
@@ -43,11 +46,31 @@ class BankTokenService:
         payload = {
             "grant_type": "refresh_token",
             "refresh_token": connection.refresh_token,
-            "client_id": settings.TOCHKA_CLIENT_ID,
-            "client_secret": settings.TOCHKA_CLIENT_SECRET,
         }
 
-        response = requests.post(url, data=payload)
+        # response = requests.post(
+        #     url,
+        #     data=payload,
+        #     auth=HTTPBasicAuth(
+        #         settings.TOCHKA_CLIENT_ID,
+        #         settings.TOCHKA_CLIENT_SECRET
+        #     ),
+        # )
+        response = requests.post(
+            url,
+            data={
+                "grant_type": "refresh_token",
+                "refresh_token": connection.refresh_token,
+            }
+        )
+
+        print("TOCHKA REFRESH RESPONSE:", response.text)
+        print("PAYLOAD:", payload)
+        print("AUTH:", settings.TOCHKA_CLIENT_ID, settings.TOCHKA_CLIENT_SECRET)
+        print("REQUEST HEADERS:", response.request.headers)
+        print("REQUEST BODY:", response.request.body)
+
+
 
         response.raise_for_status()
 

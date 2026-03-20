@@ -1,215 +1,210 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from app.integrations.banks.tochka.client import TochkaClient
-from app.models.bank_account import BankAccount
 from app.models.bank_operation import BankOperation
 from app.models.operation_batch import OperationBatch
 from app.models.legal_entity import LegalEntity
 from app.models.company import Company
+from app.models.bank_connection import BankConnection
+
+from app.integrations.banks.adapter_factory import BankAdapterFactory
+from app.models.bank_account import BankAccount
+
+import os
+
 
 class OperationSyncService:
 
     def __init__(self, db: Session):
         self.db = db
-        self.client = TochkaClient(db)
 
     def sync_operations(self):
 
-        accounts = self.db.query(BankAccount).all()
+        connections = self.db.query(BankConnection).all()
 
-        for account in accounts:
+        for connection in connections:
+
+            adapter = BankAdapterFactory.get_adapter(
+                self.db,
+                connection.bank_name
+            )
 
             now = datetime.utcnow()
 
-            # ---------- период синхронизации ----------
-
-            if account.last_synced_at:
-
-                start_date = account.last_synced_at - timedelta(days=1)
-
-            else:
-
-                start_date = now.replace(year=now.year - 1)
-
-            end_date = now
-
-            # ---------- получаем statement ----------
-
-            statement_id = self.client.create_statement(
-                account.account_number,
-                start_date.strftime("%Y-%m-%d"),
-                end_date.strftime("%Y-%m-%d")
+         
+            # --- берем счета из БД ---
+            db_accounts = (
+                self.db.query(BankAccount)
+                .filter(BankAccount.bank_connection_id == connection.id)
+                .all()
             )
 
-            transactions = self.client.get_transactions(statement_id)
+            # если счетов нет — используем стартовый (только для Sber)
+        
 
-            print(
-                f"Account {account.account_number} transactions: {len(transactions)}"
-            )
+            if not db_accounts and connection.bank_name == "sber":
+                bootstrap_account = os.getenv("SBER_BOOTSTRAP_ACCOUNT")
 
-            if not transactions:
-                account.last_synced_at = now
-                continue
-
-            # ---------- создаём batch ----------
-
-            batch = OperationBatch(
-                company_id=account.company_id,
-                source_type="bank_api",
-                total_count=len(transactions),
-                status="processing"
-            )
-
-            self.db.add(batch)
-            self.db.flush()
-
-            inserted = 0
-            duplicates = 0
-
-            for tx in transactions:
-
-                amount = tx.get("Amount", {}).get("amount")
-
-                if not amount:
+                if not bootstrap_account:
+                    print("❌ SBER_BOOTSTRAP_ACCOUNT not set")
                     continue
 
-                direction = (
-                    "incoming"
-                    if tx.get("creditDebitIndicator") == "Credit"
-                    else "outgoing"
+                print(f"⚡ Bootstrap Sber account: {bootstrap_account}")
+
+                db_accounts = []
+
+                db_accounts.append(
+                    type("AccountObj", (), {"account_number": bootstrap_account})()
                 )
 
-                operation_date_raw = tx.get("documentProcessDate")
-
-                if not operation_date_raw:
-                    continue
-
-                operation_date = datetime.strptime(
-                    operation_date_raw,
-                    "%Y-%m-%d"
-                )
-
-                document_number = tx.get("transactionId")
-
-
-
-                # ---------- определяем контрагента ----------
-
-                if direction == "incoming":
-
-                    counterparty_account = tx.get(
-                        "DebtorAccount", {}
-                    ).get("identification")
-
-                    counterparty_inn = tx.get(
-                        "DebtorParty", {}
-                    ).get("inn")
-
-                    counterparty_name = tx.get(
-                        "DebtorParty", {}
-                    ).get("name")
-
+            for account in db_accounts:
+                if hasattr(account, "last_synced_at") and account.last_synced_at:
+                    start_date = account.last_synced_at - timedelta(days=1)
                 else:
+                    start_date = now - timedelta(days=5)
 
-                    counterparty_account = tx.get(
-                        "CreditorAccount", {}
-                    ).get("identification")
+                end_date = now
 
-                    counterparty_inn = tx.get(
-                        "CreditorParty", {}
-                    ).get("inn")
+                account_number = account.account_number
 
-                    counterparty_name = tx.get(
-                        "CreditorParty", {}
-                    ).get("name")
+                operations = adapter.get_operations(
+                    account_number,
+                    start_date,
+                    end_date
+                )
 
-                # ---------- проверка: наше юрлицо ----------
+                print(
+                    f"[{connection.bank_name}] {account.account_number}: {len(operations)} ops"
+                )
 
-                our_entity = None
+                if not operations:
+                    continue
 
-                if counterparty_inn:
-                    our_entity = self.db.query(LegalEntity).filter(
-                        LegalEntity.inn == counterparty_inn
+                batch = OperationBatch(
+                    company_id=connection.company_id,
+                    source_type="bank_api",
+                    total_count=len(operations),
+                    status="processing"
+                )
+
+                self.db.add(batch)
+                self.db.flush()
+
+                inserted = 0
+                duplicates = 0
+
+                for op in operations:
+
+                    amount = op.amount
+                    direction = op.direction
+
+                    if amount is None or direction not in ("incoming", "outgoing"):
+                        continue
+
+                    operation_date = op.operation_date
+                    document_number = op.document_number
+
+                    counterparty_account = op.counterparty_account
+                    counterparty_inn = op.counterparty_inn
+                    counterparty_name = op.counterparty_name
+
+                    our_entity = None
+
+                    if counterparty_inn:
+                        our_entity = self.db.query(LegalEntity).filter(
+                            LegalEntity.inn == counterparty_inn
+                        ).first()
+
+                    existing = self.db.query(BankOperation).filter_by(
+                        company_id=connection.company_id,
+                        document_number=document_number
                     ).first()
-                # ---------- создаём операцию ----------
 
-                # ---------- ищем или создаём компанию ----------
+                    if existing:
+                        duplicates += 1
+                        continue
 
-                company = None
+                    counterparty_id = None
 
-                if counterparty_inn:
-                    company = (
-                        self.db.query(Company)
-                        .filter(Company.inn == counterparty_inn)
+                    if counterparty_inn:
+                        company = (
+                            self.db.query(Company)
+                            .filter(Company.inn == counterparty_inn)
+                            .first()
+                        )
+
+                        if not company:
+                            company = Company(
+                                name=counterparty_name,
+                                inn=counterparty_inn
+                            )
+                            self.db.add(company)
+                            self.db.flush()
+
+                        counterparty_id = company.id
+                    
+                    db_account = (
+                        self.db.query(BankAccount)
+                        .filter(
+                            BankAccount.account_number == op.account_number,
+                            BankAccount.bank_connection_id == connection.id
+                        )
                         .first()
                     )
 
-                    if not company:
-                        company = Company(
-                            inn=counterparty_inn,
-                            name=counterparty_name or f"INN {counterparty_inn}",
-                            status="from_operations"
+                    if not db_account:
+                        db_account = BankAccount(
+                            company_id=connection.company_id,
+                            bank_connection_id=connection.id,
+                            account_number=op.account_number,
+                            currency=None
                         )
-                        self.db.add(company)
+                        self.db.add(db_account)
                         self.db.flush()
 
-                # ---------- проверка дублей ----------
+                    operation = BankOperation(
+                        counterparty_id=counterparty_id,
+                        bank_connection_id=connection.id,
 
-                existing = self.db.query(BankOperation).filter_by(
-                    company_id=company.id if company else None,  # оставить старое
-                    legal_entity_id=account.legal_entity_id,  # новое,
-                    document_number=document_number,
-                    document_type="bank_payment",
-                    operation_date=operation_date,
-                    amount=amount,
-                    direction=direction
-                ).first()
+                        company_id=connection.company_id,
+                        legal_entity_id=None,
+                        import_batch_id=batch.id,
 
-                if existing:
-                    duplicates += 1
-                    continue
+                        document_number=document_number,
+                        document_type="bank_payment",
 
-                # ---------- создаём операцию ----------
+                        amount=amount,
+                        direction=direction,
 
-                operation = BankOperation(
+                        operation_date=operation_date,
+                        document_date=operation_date.date(),
 
-                    company_id=company.id if company else None,
-                    legal_entity_id=account.legal_entity_id,
-                    import_batch_id=batch.id,
+                        account_number=op.account_number,
+                        bank_account_id=db_account.id,
 
-                    document_number=document_number,
-                    document_type="bank_payment",
+                        counterparty_account=counterparty_account,
+                        counterparty_inn=counterparty_inn,
+                        counterparty_name=counterparty_name,
 
-                    amount=amount,
-                    direction=direction,
+                        is_internal=our_entity is not None,
+                        counterparty_legal_entity_id=(
+                            our_entity.id if our_entity else None
+                        ),
 
-                    operation_date=operation_date,
-                    document_date=operation_date.date(),
+                        description=op.description
+                    )
 
-                    account_number=account.account_number,
+                    self.db.add(operation)
+                    inserted += 1
 
-                    counterparty_account=counterparty_account,
-                    counterparty_inn=counterparty_inn,
-                    counterparty_name=counterparty_name,
-
-                    is_internal=our_entity is not None,
-                    counterparty_legal_entity_id=(
-                        our_entity.id if our_entity else None
-                    ),
-
-                    description=tx.get("description")
-                )
-
-                self.db.add(operation)
-                inserted += 1
-
-            # ---------- финализация batch ----------
-
-            batch.inserted_count = inserted
-            batch.duplicate_count = duplicates
-            batch.status = "success"
-
-            account.last_synced_at = now
+                batch.inserted_count = inserted
+                batch.duplicate_count = duplicates
+                batch.status = "success"
+                
+                
+                # обновляем время синка
+                if hasattr(account, "last_synced_at"):
+                    account.last_synced_at = now
+                    self.db.add(account)
 
         self.db.commit()

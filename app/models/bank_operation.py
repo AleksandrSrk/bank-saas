@@ -38,7 +38,24 @@ class BankOperation(Base):
 
     company = relationship(
         "Company",
-        back_populates="bank_operations"
+        back_populates="bank_operations",
+        foreign_keys=[company_id]
+    )
+    
+    bank_connection_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("bank_connections.id"),
+        nullable=True
+    )
+
+    counterparty_id = Column(
+        UUID(as_uuid=True), 
+        ForeignKey("companies.id"), 
+        nullable=True
+    )
+    counterparty = relationship(
+        "Company",
+        foreign_keys=[counterparty_id]
     )
 
     batch = relationship(
@@ -61,6 +78,11 @@ class BankOperation(Base):
     # Счета
     account_number = Column(String, nullable=False)
     counterparty_account = Column(String, nullable=True)
+    bank_account_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("bank_accounts.id"),
+        nullable=True
+    )
 
     # Контрагент
     counterparty_inn = Column(String, nullable=True)

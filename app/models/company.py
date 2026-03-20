@@ -19,7 +19,8 @@ class Company(Base):
     bank_operations = relationship(
         "BankOperation",
         back_populates="company",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        foreign_keys="BankOperation.company_id"
     )
 
     name: Mapped[str | None] = mapped_column(String(255), nullable=True)

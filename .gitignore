@@ -46,3 +46,9 @@ tests/fixtures/
 *.sql
 
 Notes.md
+
+# 🔐 Sber certs
+certs/
+*.pem
+*.key
+*.p12

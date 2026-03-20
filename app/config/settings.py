@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     DADATA_API_KEY: str
     DADATA_SECRET_KEY: str
 
+    SBER_ACCESS_TOKEN: str | None = None
+    SBER_BOOTSTRAP_ACCOUNT: str | None = None
+
     class Config:
         env_file = ".env"
 

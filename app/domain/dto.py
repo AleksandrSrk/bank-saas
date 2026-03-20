@@ -17,10 +17,11 @@ class OperationImportDTO:
     operation_date: datetime
     document_date: Optional[date]
 
-    debit_amount: Optional[Decimal]
-    credit_amount: Optional[Decimal]
+    amount: Decimal
+    direction: str  # "incoming" / "outgoing"
 
     account_number: str
+
     counterparty_account: Optional[str]
     counterparty_inn: Optional[str]
     counterparty_name: Optional[str]
