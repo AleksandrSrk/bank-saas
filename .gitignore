@@ -52,3 +52,5 @@ certs/
 *.pem
 *.key
 *.p12
+
+dump.sql
