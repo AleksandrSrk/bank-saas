@@ -1,19 +1,33 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List
+import os
 
 from app.integrations.banks.base.bank_adapter import BankAdapter
 from app.domain.dto import OperationImportDTO
 from app.integrations.banks.sber.client import SberClient
-from datetime import timedelta
+
 
 class SberAdapter(BankAdapter):
-    def get_accounts(self):
-        return []
 
     def __init__(self, db):
         self.db = db
         self.client = SberClient()
+
+    # 🔥 bootstrap счет (пока Sber API не даёт список счетов)
+    def get_accounts(self):
+        account = os.getenv("SBER_BOOTSTRAP_ACCOUNT")
+
+        if not account:
+            print("❌ SBER_BOOTSTRAP_ACCOUNT not set")
+            return []
+
+        return [
+            {
+                "account_number": account,
+                "currency": "RUB"
+            }
+        ]
 
     def _parse_date(self, raw: str) -> datetime:
         if not raw:
@@ -31,8 +45,6 @@ class SberAdapter(BankAdapter):
             return datetime.strptime(raw[:10], "%Y-%m-%d")
 
     def get_operations(self, account_number, start_date, end_date) -> List[OperationImportDTO]:
-
-        date_str = start_date.strftime("%Y-%m-%d")
 
         all_transactions = []
 
@@ -118,7 +130,5 @@ class SberAdapter(BankAdapter):
             )
 
             result.append(dto)
-            print("SBER REQUEST DATE:", date_str)
-        print("SBER REQUEST DATE:", date_str)
 
         return result

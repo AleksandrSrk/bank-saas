@@ -113,7 +113,7 @@ class TochkaClient:
         while True:
 
             data = self.get_statement(statement_id)
-
+            print("TOCHKA RAW RESPONSE:", data)
             statements = data.get("Data", {}).get("Statement", [])
 
             if not statements:

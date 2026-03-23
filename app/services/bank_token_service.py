@@ -48,19 +48,13 @@ class BankTokenService:
             "refresh_token": connection.refresh_token,
         }
 
-        # response = requests.post(
-        #     url,
-        #     data=payload,
-        #     auth=HTTPBasicAuth(
-        #         settings.TOCHKA_CLIENT_ID,
-        #         settings.TOCHKA_CLIENT_SECRET
-        #     ),
-        # )
         response = requests.post(
             url,
             data={
                 "grant_type": "refresh_token",
                 "refresh_token": connection.refresh_token,
+                "client_id": settings.TOCHKA_CLIENT_ID,
+                "client_secret": settings.TOCHKA_CLIENT_SECRET,
             }
         )
 

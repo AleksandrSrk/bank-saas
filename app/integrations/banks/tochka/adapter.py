@@ -33,9 +33,11 @@ class TochkaAdapter(BankAdapter):
             })
 
         return result
+    
 
     def get_operations(self, account_number, start_date, end_date) -> List[OperationImportDTO]:
-
+        print("TOCHKA REQUEST:", start_date, end_date)
+        
         statement_id = self.client.create_statement(
             account_number,
             start_date.strftime("%Y-%m-%d"),
