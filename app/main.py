@@ -12,6 +12,7 @@ from app.api.bank_sync_router import router as bank_sync_router
 from app.services.sync_scheduler import start_scheduler
 
 from app.api.telegram_router import router as telegram_router
+from app.scripts.seed_roles import seed_roles
 
 app = FastAPI()
 
@@ -26,8 +27,8 @@ app.include_router(telegram_router)
 
 @app.on_event("startup")
 def startup_event():
+    seed_roles()
     start_scheduler()
-
     
 @app.get("/")
 def healthcheck():

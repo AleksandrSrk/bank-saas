@@ -57,9 +57,9 @@ async def start_handler(message: Message):
     telegram_id = message.from_user.id
     username = message.from_user.username
 
-    # регистрация
+    # --- регистрация / получение статуса
     response = requests.post(
-        f"{API_URL}/register",
+        f"{API_URL}/telegram/register",
         params={
             "telegram_id": telegram_id,
             "username": username
@@ -69,8 +69,12 @@ async def start_handler(message: Message):
     data = response.json()
     status = data.get("status")
 
-    # --- новый пользователь
-    if status == "pending_approval":
+    print("REGISTER STATUS:", status)
+
+    # -------------------------
+    # ❗ НОВЫЙ / НЕОДОБРЕННЫЙ
+    # -------------------------
+    if status in ["pending_approval", "created"]:
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
@@ -84,19 +88,34 @@ async def start_handler(message: Message):
         )
 
         await message.answer(
-            "Вы не подключены.\nОтправить запрос директору?",
+            "Вы не подключены к системе.\nОтправить запрос директору?",
             reply_markup=keyboard
         )
         return
 
-    # --- определяем роль
+    # -------------------------
+    # ❗ ПРОВЕРКА РОЛИ
+    # -------------------------
     role_resp = requests.get(
-        f"{API_URL}/user_role",
+        f"{API_URL}/telegram/user_role",
         params={"telegram_id": telegram_id}
     )
 
-    role = role_resp.json().get("role")
+    role_data = role_resp.json()
+    role = role_data.get("role")
 
+    print("ROLE:", role)
+
+    # ❗ если роли нет — НЕ ПУСКАЕМ
+    if not role:
+        await message.answer(
+            "❌ Вы не активированы.\nДождитесь одобрения директора."
+        )
+        return
+
+    # -------------------------
+    # DIRECTOR
+    # -------------------------
     if role == "director":
         await message.answer(
             "Вы вошли как директор",
@@ -104,11 +123,18 @@ async def start_handler(message: Message):
         )
         return
 
-    # --- менеджер
-    await message.answer(
-        "Вы вошли как менеджер",
-        reply_markup=manager_menu
-    )
+    # -------------------------
+    # MANAGER
+    # -------------------------
+    if role == "manager":
+        await message.answer(
+            "Вы вошли как менеджер",
+            reply_markup=manager_menu
+        )
+        return
+
+    # fallback
+    await message.answer("❌ Неизвестная роль")
 
 
 # ---------------- МОИ КОМПАНИИ ----------------
@@ -119,7 +145,7 @@ async def companies_handler(message: types.Message):
     telegram_id = message.from_user.id
 
     response = requests.get(
-        f"{API_URL}/my_companies",
+        f"{API_URL}/telegram/my_companies",
         params={"telegram_id": telegram_id}
     )
 
@@ -162,7 +188,7 @@ async def show_operations(callback: types.CallbackQuery):
     telegram_id = callback.from_user.id
 
     response = requests.get(
-        f"{API_URL}/company_operations",
+        f"{API_URL}/telegram/company_operations",
         params={
             "telegram_id": telegram_id,
             "inn": inn,
@@ -198,8 +224,8 @@ async def show_operations(callback: types.CallbackQuery):
         text += f"{op['date']}  {sign}{op['amount']}\n"
 
     text += "\n"
-    text += f"Входящие: {data['total_in']}\n"
-    text += f"Исходящие: {data['total_out']}"
+    text += f"Входящие: {data.get('total_in', 0)}\n"
+    text += f"Исходящие: {data.get('total_out', 0)}"
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -224,7 +250,7 @@ async def show_details(callback: types.CallbackQuery):
     telegram_id = callback.from_user.id
 
     response = requests.get(
-        f"{API_URL}/company_operations",
+        f"{API_URL}/telegram/company_operations",
         params={
             "telegram_id": telegram_id,
             "inn": inn,
@@ -274,7 +300,7 @@ async def company_selected(callback: types.CallbackQuery):
     telegram_id = callback.from_user.id
 
     response = requests.get(
-        f"{API_URL}/my_companies",
+        f"{API_URL}/telegram/my_companies",
         params={"telegram_id": telegram_id}
     )
 
@@ -323,7 +349,7 @@ async def process_inn(message: types.Message, state: FSMContext):
     telegram_id = message.from_user.id
 
     response = requests.post(
-        f"{API_URL}/track",
+        f"{API_URL}/telegram/track",
         params={
             "telegram_id": telegram_id,
             "inn": inn
@@ -398,7 +424,7 @@ async def send_request(callback: types.CallbackQuery):
     username = callback.from_user.username
 
     response = requests.get(
-        f"{API_URL}/request_info",
+        f"{API_URL}/telegram/request_info",
         params={"request_id": request_id}
     )
 
@@ -435,7 +461,7 @@ async def send_request(callback: types.CallbackQuery):
         ]
     )
 
-    directors = requests.get(f"{API_URL}/directors").json()
+    directors = requests.get(f"{API_URL}/telegram/directors").json()
 
     for director in directors:
         await bot.send_message(
@@ -458,7 +484,7 @@ async def handle_decision(callback: types.CallbackQuery):
     if action == "approve":
 
         response = requests.post(
-            f"{API_URL}/requests/{request_id}/approve",
+            f"{API_URL}/telegram/requests/{request_id}/approve",
             params={"director_id": telegram_id}
         )
 
@@ -471,7 +497,7 @@ async def handle_decision(callback: types.CallbackQuery):
     else:
 
         response = requests.post(
-            f"{API_URL}/requests/{request_id}/reject",
+            f"{API_URL}/telegram/requests/{request_id}/reject",
             params={"director_id": telegram_id}
         )
 
@@ -496,7 +522,7 @@ async def handle_decision(callback: types.CallbackQuery):
 @dp.message(lambda m: m.text == "👥 Менеджеры")
 async def show_managers(message: types.Message):
 
-    response = requests.get(f"{API_URL}/managers_companies")
+    response = requests.get(f"{API_URL}/telegram/managers_companies")
 
     data = response.json()
 
@@ -544,7 +570,7 @@ async def show_manager_companies(callback: types.CallbackQuery):
 
     manager = callback.data.split(":")[1]
 
-    response = requests.get(f"{API_URL}/managers_companies")
+    response = requests.get(f"{API_URL}/telegram/managers_companies")
 
     data = response.json()
 
@@ -590,7 +616,7 @@ async def revoke_access(callback: types.CallbackQuery):
     try:
 
         response = requests.post(
-            f"{API_URL}/revoke_access",
+            f"{API_URL}/telegram/revoke_access",
             params={"tracked_id": tracked_id}
         )
 
@@ -626,7 +652,7 @@ async def revoke_access(callback: types.CallbackQuery):
 async def render_legal_entities(callback: CallbackQuery, user_id: str):
 
     resp = requests.get(
-        f"{API_URL}/users/{user_id}/legal_entities"
+        f"{API_URL}/telegram/users/{user_id}/legal_entities"
     )
 
     if resp.status_code != 200:
@@ -665,7 +691,7 @@ async def render_legal_entities(callback: CallbackQuery, user_id: str):
 async def legal_entities_menu(message: Message):
 
     try:
-        response = requests.get(f"{API_URL}/users")
+        response = requests.get(f"{API_URL}/telegram/users")
 
         print("STATUS:", response.status_code)
         print("TEXT:", response.text)
@@ -711,7 +737,7 @@ async def toggle_access(callback: CallbackQuery):
 
     # получаем список юрлиц
     resp = requests.get(
-        f"{API_URL}/users/{user_id}/legal_entities"
+        f"{API_URL}/telegram/users/{user_id}/legal_entities"
     )
 
     if resp.status_code != 200:
@@ -738,7 +764,7 @@ async def toggle_access(callback: CallbackQuery):
 
     # сохраняем
     requests.post(
-        f"{API_URL}/users/{user_id}/legal_entities",
+        f"{API_URL}/telegram/users/{user_id}/legal_entities",
         json=current_ids
     )
 
@@ -753,7 +779,7 @@ async def onboard_user(callback: CallbackQuery):
 
     _, telegram_id = callback.data.split(":")
 
-    users = requests.get(f"{API_URL}/users").json()
+    users = requests.get(f"{API_URL}/telegram/users").json()
 
     user = next(
         (u for u in users if str(u["telegram_id"]) == str(telegram_id)),
@@ -791,7 +817,7 @@ async def send_simple_request(callback: CallbackQuery):
         ]
     )
 
-    directors = requests.get(f"{API_URL}/directors").json()
+    directors = requests.get(f"{API_URL}/telegram/directors").json()
 
     for director in directors:
         await bot.send_message(
@@ -812,7 +838,7 @@ async def save_legal_entities(callback: CallbackQuery):
     print("SAVING ACCESS FOR USER:", user_id)
 
     # --- получаем текущие выбранные юрлица
-    resp = requests.get(f"{API_URL}/users/{user_id}/legal_entities")
+    resp = requests.get(f"{API_URL}/telegram/users/{user_id}/legal_entities")
 
     if resp.status_code != 200:
         await callback.message.answer("Ошибка загрузки юрлиц")
@@ -827,12 +853,12 @@ async def save_legal_entities(callback: CallbackQuery):
 
     # --- сохраняем доступы
     requests.post(
-        f"{API_URL}/users/{user_id}/legal_entities",
+        f"{API_URL}/telegram/users/{user_id}/legal_entities",
         json=selected_ids
     )
 
     # --- подтверждаем регистрацию (если новый пользователь)
-    pending = requests.get(f"{API_URL}/users/pending").json()
+    pending = requests.get(f"{API_URL}/telegram/users/pending").json()
 
     user_request = next(
         (r for r in pending if str(r["user_id"]) == str(user_id)),
@@ -841,7 +867,7 @@ async def save_legal_entities(callback: CallbackQuery):
 
     if user_request:
         requests.post(
-            f"{API_URL}/users/{user_request['request_id']}/approve",
+            f"{API_URL}/telegram/users/{user_request['request_id']}/approve",
             params={"director_telegram_id": callback.from_user.id}
         )
 
