@@ -30,7 +30,9 @@ services:
       sh -c "sleep 5 && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
   bot:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: bank_bot
     restart: always
     depends_on:
@@ -40,7 +42,6 @@ services:
     volumes:
       - .:/app
     command: >
-      sh -c "sleep 10 && python -m bot.telegram_bot"
-
+      sh -c "pip install -r requirements_bot.txt && python -m bot.telegram_bot"
 volumes:
   postgres_data:
