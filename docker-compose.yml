@@ -27,7 +27,20 @@ services:
     volumes:
       - .:/app
     command: >
-      sh -c "sleep 5 && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app"
+      sh -c "sleep 5 && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  bot:
+    build: .
+    container_name: bank_bot
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: >
+      sh -c "sleep 10 && python -m bot.telegram_bot"
 
 volumes:
   postgres_data:

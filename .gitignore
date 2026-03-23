@@ -54,3 +54,5 @@ certs/
 *.p12
 
 dump.sql
+
+logs/
