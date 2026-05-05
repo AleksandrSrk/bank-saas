@@ -5,6 +5,7 @@ if os.name == "nt":
     
 import httpx
 import requests
+import re
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
@@ -24,6 +25,42 @@ from aiogram.types import Message, CallbackQuery
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
+_OOO_LONG_RE = re.compile(
+    r"^\s*ОБЩЕСТВО\s+С\s+ОГРАНИЧЕННОЙ\s+ОТВЕТСТВЕННОСТЬЮ\s*",
+    flags=re.IGNORECASE,
+)
+_OOO_WORD_RE = re.compile(r"\bООО\b", flags=re.IGNORECASE)
+
+
+def normalize_company_name(raw: str | None) -> str:
+    """
+    Make company names more readable in Telegram:
+    - "Общество с ограниченной ответственностью <X>" -> "ООО <X>"
+    - Move trailing "ООО" to prefix: "<X> ООО" -> "ООО <X>"
+    - Remove duplicate/middle "ООО" tokens.
+    """
+    if not raw:
+        return "Без названия"
+
+    name = raw.strip()
+    name = _OOO_LONG_RE.sub("ООО ", name).strip()
+
+    # If starts with ООО already, keep it as prefix.
+    starts_with_ooo = name.upper().startswith("ООО")
+
+    # Remove all ООО tokens, then re-add a single prefix if it was present anywhere.
+    had_ooo_anywhere = bool(_OOO_WORD_RE.search(name))
+    cleaned = _OOO_WORD_RE.sub("", name)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" \"'«»")
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+    if had_ooo_anywhere or starts_with_ooo:
+        if cleaned:
+            return f"ООО {cleaned}"
+        return "ООО"
+
+    return cleaned or "Без названия"
 
 
 class RequestCompany(StatesGroup):
@@ -172,7 +209,7 @@ async def companies_handler(message: types.Message):
 
     for company in companies:
 
-        name = company["name"] or "Без названия"
+        name = normalize_company_name(company.get("name"))
         inn = company["inn"]
         tracked_id = company.get("tracked_id")
 
