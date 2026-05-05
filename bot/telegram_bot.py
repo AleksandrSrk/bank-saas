@@ -17,7 +17,7 @@ from aiogram.types import (
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-from bot.config import BOT_TOKEN, API_URL
+from bot.config import BOT_TOKEN, API_URL, INTERNAL_API_KEY
 
 from aiogram.types import Message, CallbackQuery
 
@@ -35,10 +35,19 @@ class RequestCompany(StatesGroup):
 director_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="👥 Менеджеры")],
-        [KeyboardButton(text="🏢 Доступ к юрлицам")]
+        [KeyboardButton(text="🏢 Доступ к юрлицам")],
+        [KeyboardButton(text="💰 Балансы")]
     ],
     resize_keyboard=True
 )
+# ---------------- API helper ----------------
+
+def _api_headers():
+    headers = {}
+    if INTERNAL_API_KEY:
+        headers["X-API-Key"] = INTERNAL_API_KEY
+    return headers
+
 
 manager_menu = ReplyKeyboardMarkup(
     keyboard=[
@@ -63,13 +72,14 @@ async def start_handler(message: Message):
         params={
             "telegram_id": telegram_id,
             "username": username
-        }
+        },
+        headers=_api_headers(),
     )
 
     data = response.json()
     status = data.get("status")
 
-    print("REGISTER STATUS:", status)
+    # avoid noisy stdout logs in production
 
     # -------------------------
     # ❗ НОВЫЙ / НЕОДОБРЕННЫЙ
@@ -98,13 +108,14 @@ async def start_handler(message: Message):
     # -------------------------
     role_resp = requests.get(
         f"{API_URL}/telegram/user_role",
-        params={"telegram_id": telegram_id}
+        params={"telegram_id": telegram_id},
+        headers=_api_headers(),
     )
 
     role_data = role_resp.json()
     role = role_data.get("role")
 
-    print("ROLE:", role)
+    # avoid noisy stdout logs in production
 
     # ❗ если роли нет — НЕ ПУСКАЕМ
     if not role:
@@ -146,7 +157,8 @@ async def companies_handler(message: types.Message):
 
     response = requests.get(
         f"{API_URL}/telegram/my_companies",
-        params={"telegram_id": telegram_id}
+        params={"telegram_id": telegram_id},
+        headers=_api_headers(),
     )
 
     companies = response.json()
@@ -193,7 +205,8 @@ async def show_operations(callback: types.CallbackQuery):
             "telegram_id": telegram_id,
             "inn": inn,
             "days": days
-        }
+        },
+        headers=_api_headers(),
     )
 
     data = response.json()
@@ -256,7 +269,8 @@ async def show_details(callback: types.CallbackQuery):
             "inn": inn,
             "days": days,
             "details": True
-        }
+        },
+        headers=_api_headers(),
     )
 
     data = response.json()
@@ -301,7 +315,8 @@ async def company_selected(callback: types.CallbackQuery):
 
     response = requests.get(
         f"{API_URL}/telegram/my_companies",
-        params={"telegram_id": telegram_id}
+        params={"telegram_id": telegram_id},
+        headers=_api_headers(),
     )
 
     companies = response.json()
@@ -353,7 +368,8 @@ async def process_inn(message: types.Message, state: FSMContext):
         params={
             "telegram_id": telegram_id,
             "inn": inn
-        }
+        },
+        headers=_api_headers(),
     )
 
     data = response.json()
@@ -425,7 +441,8 @@ async def send_request(callback: types.CallbackQuery):
 
     response = requests.get(
         f"{API_URL}/telegram/request_info",
-        params={"request_id": request_id}
+        params={"request_id": request_id},
+        headers=_api_headers(),
     )
 
     data = response.json()
@@ -461,7 +478,7 @@ async def send_request(callback: types.CallbackQuery):
         ]
     )
 
-    directors = requests.get(f"{API_URL}/telegram/directors").json()
+    directors = requests.get(f"{API_URL}/telegram/directors", headers=_api_headers()).json()
 
     for director in directors:
         await bot.send_message(
@@ -485,7 +502,8 @@ async def handle_decision(callback: types.CallbackQuery):
 
         response = requests.post(
             f"{API_URL}/telegram/requests/{request_id}/approve",
-            params={"director_id": telegram_id}
+            params={"director_id": telegram_id},
+            headers=_api_headers(),
         )
 
         data = response.json()
@@ -498,7 +516,8 @@ async def handle_decision(callback: types.CallbackQuery):
 
         response = requests.post(
             f"{API_URL}/telegram/requests/{request_id}/reject",
-            params={"director_id": telegram_id}
+            params={"director_id": telegram_id},
+            headers=_api_headers(),
         )
 
         data = response.json()
@@ -522,7 +541,7 @@ async def handle_decision(callback: types.CallbackQuery):
 @dp.message(lambda m: m.text == "👥 Менеджеры")
 async def show_managers(message: types.Message):
 
-    response = requests.get(f"{API_URL}/telegram/managers_companies")
+    response = requests.get(f"{API_URL}/telegram/managers_companies", headers=_api_headers())
 
     data = response.json()
 
@@ -570,7 +589,10 @@ async def show_manager_companies(callback: types.CallbackQuery):
 
     manager = callback.data.split(":")[1]
 
-    response = requests.get(f"{API_URL}/telegram/managers_companies")
+    response = requests.get(
+        f"{API_URL}/telegram/managers_companies",
+        headers=_api_headers(),
+    )
 
     data = response.json()
 
@@ -617,7 +639,8 @@ async def revoke_access(callback: types.CallbackQuery):
 
         response = requests.post(
             f"{API_URL}/telegram/revoke_access",
-            params={"tracked_id": tracked_id}
+            params={"tracked_id": tracked_id},
+            headers=_api_headers(),
         )
 
         data = response.json()
@@ -652,7 +675,8 @@ async def revoke_access(callback: types.CallbackQuery):
 async def render_legal_entities(callback: CallbackQuery, user_id: str):
 
     resp = requests.get(
-        f"{API_URL}/telegram/users/{user_id}/legal_entities"
+        f"{API_URL}/telegram/users/{user_id}/legal_entities",
+        headers=_api_headers()
     )
 
     if resp.status_code != 200:
@@ -691,10 +715,7 @@ async def render_legal_entities(callback: CallbackQuery, user_id: str):
 async def legal_entities_menu(message: Message):
 
     try:
-        response = requests.get(f"{API_URL}/telegram/users")
-
-        print("STATUS:", response.status_code)
-        print("TEXT:", response.text)
+        response = requests.get(f"{API_URL}/telegram/users", headers=_api_headers())
 
         users = response.json()
 
@@ -737,7 +758,8 @@ async def toggle_access(callback: CallbackQuery):
 
     # получаем список юрлиц
     resp = requests.get(
-        f"{API_URL}/telegram/users/{user_id}/legal_entities"
+        f"{API_URL}/telegram/users/{user_id}/legal_entities",
+        headers=_api_headers()
     )
 
     if resp.status_code != 200:
@@ -765,7 +787,8 @@ async def toggle_access(callback: CallbackQuery):
     # сохраняем
     requests.post(
         f"{API_URL}/telegram/users/{user_id}/legal_entities",
-        json=current_ids
+        json=current_ids,
+        headers=_api_headers(),
     )
 
     await render_legal_entities(callback, user_id)
@@ -779,7 +802,7 @@ async def onboard_user(callback: CallbackQuery):
 
     _, telegram_id = callback.data.split(":")
 
-    users = requests.get(f"{API_URL}/telegram/users").json()
+    users = requests.get(f"{API_URL}/telegram/users", headers=_api_headers()).json()
 
     user = next(
         (u for u in users if str(u["telegram_id"]) == str(telegram_id)),
@@ -817,7 +840,7 @@ async def send_simple_request(callback: CallbackQuery):
         ]
     )
 
-    directors = requests.get(f"{API_URL}/telegram/directors").json()
+    directors = requests.get(f"{API_URL}/telegram/directors", headers=_api_headers()).json()
 
     for director in directors:
         await bot.send_message(
@@ -835,10 +858,11 @@ async def save_legal_entities(callback: CallbackQuery):
 
     _, user_id = callback.data.split(":")
 
-    print("SAVING ACCESS FOR USER:", user_id)
-
     # --- получаем текущие выбранные юрлица
-    resp = requests.get(f"{API_URL}/telegram/users/{user_id}/legal_entities")
+    resp = requests.get(
+        f"{API_URL}/telegram/users/{user_id}/legal_entities",
+        headers=_api_headers(),
+    )
 
     if resp.status_code != 200:
         await callback.message.answer("Ошибка загрузки юрлиц")
@@ -854,11 +878,12 @@ async def save_legal_entities(callback: CallbackQuery):
     # --- сохраняем доступы
     requests.post(
         f"{API_URL}/telegram/users/{user_id}/legal_entities",
-        json=selected_ids
+        json=selected_ids,
+        headers=_api_headers(),
     )
 
     # --- подтверждаем регистрацию (если новый пользователь)
-    pending = requests.get(f"{API_URL}/telegram/users/pending").json()
+    pending = requests.get(f"{API_URL}/telegram/users/pending", headers=_api_headers()).json()
 
     user_request = next(
         (r for r in pending if str(r["user_id"]) == str(user_id)),
@@ -868,8 +893,48 @@ async def save_legal_entities(callback: CallbackQuery):
     if user_request:
         requests.post(
             f"{API_URL}/telegram/users/{user_request['request_id']}/approve",
-            params={"director_telegram_id": callback.from_user.id}
+            params={"director_telegram_id": callback.from_user.id},
+            headers=_api_headers(),
         )
+
+
+# ---------------- BALANCES (director) ----------------
+
+@dp.message(lambda m: m.text == "💰 Балансы")
+async def balances_handler(message: types.Message):
+    try:
+        resp = requests.get(f"{API_URL}/balances/", headers=_api_headers(), timeout=90)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        await message.answer(f"❌ Не удалось получить балансы: {e}")
+        return
+
+    lines = []
+    lines.append(f"⏱ Запрос: {data.get('requested_at_utc', '-')}")
+
+    tochka = data.get("tochka") or {}
+    if "error" in tochka:
+        lines.append(f"\nТочка: ❌ {tochka['error']}")
+    else:
+        accounts = (tochka.get("accounts") or [])
+        if not accounts:
+            lines.append("\nТочка: нет счетов/данных")
+        else:
+            lines.append("\nТочка:")
+            for a in accounts:
+                lines.append(
+                    f"- {a.get('account_number')} {a.get('currency') or ''}: {a.get('end_balance')} (банк: {a.get('bank_timestamp')})"
+                )
+
+    sber = data.get("sber") or {}
+    if "error" in sber:
+        lines.append(f"\nСбер: ❌ {sber['error']}")
+    else:
+        lines.append("\nСбер:")
+        lines.append(f"- {sber.get('account_number')}: summary получен (банк: {sber.get('bank_timestamp')})")
+
+    await message.answer("\n".join(lines))
 
         if user_request.get("telegram_id"):
             await bot.send_message(
@@ -883,8 +948,6 @@ async def save_legal_entities(callback: CallbackQuery):
 # ---------------- ЗАПУСК БОТА ----------------
 
 async def main():
-
-    print("Bot started")
 
     await bot.delete_webhook(drop_pending_updates=True)
 

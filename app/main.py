@@ -9,6 +9,7 @@ from app.api.bank_operation_router import router as bank_operation_router
 from app.api.import_router import router as import_router
 from app.api.bank_connection_router import router as bank_connection_router
 from app.api.bank_sync_router import router as bank_sync_router
+from app.api.balance_router import router as balance_router
 from app.services.sync_scheduler import start_scheduler
 
 from app.api.telegram_router import router as telegram_router
@@ -23,6 +24,7 @@ app.include_router(bank_operation_router, dependencies=[Depends(require_api_key)
 app.include_router(import_router, dependencies=[Depends(require_api_key)])
 app.include_router(bank_connection_router, dependencies=[Depends(require_api_key)])
 app.include_router(bank_sync_router, dependencies=[Depends(require_api_key)])
+app.include_router(balance_router, dependencies=[Depends(require_api_key)])
 
 app.include_router(telegram_router, dependencies=[Depends(require_api_key)])
 

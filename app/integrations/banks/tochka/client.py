@@ -1,5 +1,6 @@
 import time
 import requests
+from datetime import date as date_type
 
 from app.config.settings import settings
 from app.services.bank_connection_service import BankConnectionService
@@ -134,6 +135,27 @@ class TochkaClient:
         statement = self.wait_statement_ready(statement_id)
 
         return statement.get("Transaction", [])
+
+    def get_balance(self, account_number: str, on_date: date_type | None = None):
+        """
+        Fetch balance via statement summary (endDateBalance) for a single day.
+        Returns {balance, currency?, bank_timestamp}.
+        """
+        d = on_date or date_type.today()
+        day = d.strftime("%Y-%m-%d")
+
+        statement_id = self.create_statement(account_number, day, day)
+        statement = self.wait_statement_ready(statement_id, timeout=60)
+
+        return {
+            "accountId": statement.get("accountId"),
+            "statementId": statement.get("statementId"),
+            "startDateTime": statement.get("startDateTime"),
+            "endDateTime": statement.get("endDateTime"),
+            "bank_timestamp": statement.get("creationDateTime"),
+            "start_balance": statement.get("startDateBalance"),
+            "end_balance": statement.get("endDateBalance"),
+        }
     
     def get_accounts(self):
 

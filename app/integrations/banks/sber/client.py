@@ -19,6 +19,34 @@ class SberClient:
             "Authorization": f"Bearer {os.getenv('SBER_ACCESS_TOKEN')}"
         }
 
+    def get_summary(self, account_number: str, date: str):
+        """
+        Returns statement summary for given day (contains balances/turnovers).
+        """
+        url = f"{self.base_url}/fintech/api/v2/statement/summary"
+
+        params = {
+            "accountNumber": account_number,
+            "statementDate": date,
+        }
+
+        response = requests.get(
+            url,
+            params=params,
+            headers=self.headers,
+            cert=self.cert,
+            verify=self.verify,
+            timeout=30,
+        )
+
+        response.raise_for_status()
+
+        return {
+            "data": response.json(),
+            # Bank/server time as seen by HTTP layer (useful for “real response” proof)
+            "server_date": response.headers.get("Date"),
+        }
+
     def get_operations(self, account_number: str, date: str, page: int = 1):
 
         url = f"{self.base_url}/fintech/api/v2/statement/transactions"
