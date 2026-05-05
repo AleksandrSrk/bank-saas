@@ -187,8 +187,10 @@ async def start_handler(message: Message):
 @dp.message(lambda m: m.text == "📊 Компании")
 async def companies_handler(message: types.Message):
 
-    telegram_id = message.from_user.id
+    await render_my_companies(message, message.from_user.id)
 
+
+async def render_my_companies(message: Message, telegram_id: int):
     response = requests.get(
         f"{API_URL}/telegram/my_companies",
         params={"telegram_id": telegram_id},
@@ -198,35 +200,32 @@ async def companies_handler(message: types.Message):
     companies = response.json()
 
     if not companies:
-
         await message.answer("У вас нет компаний на отслеживании.")
         return
 
     keyboard = []
 
     for company in companies:
-
         name = normalize_company_name(company.get("name"))
         inn = company["inn"]
         tracked_id = company.get("tracked_id")
 
-        keyboard.append([
-            InlineKeyboardButton(
-                text=f"{name} ({inn})",
-                callback_data=f"company:{inn}"
-            ),
-            InlineKeyboardButton(
-                text="❌ Убрать",
-                callback_data=f"my_revoke:{tracked_id}" if tracked_id else "ignore"
-            ),
-        ])
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    text=f"{name} ({inn})",
+                    callback_data=f"company:{inn}",
+                ),
+                InlineKeyboardButton(
+                    text="❌ Убрать",
+                    callback_data=f"my_revoke:{tracked_id}" if tracked_id else "ignore",
+                ),
+            ]
+        )
 
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-    await message.answer(
-        "Выберите компанию:",
-        reply_markup=markup
-    )
+    await message.answer("Выберите компанию:", reply_markup=markup)
 
 
 @dp.callback_query(lambda c: c.data.startswith("my_revoke:"))
@@ -254,9 +253,38 @@ async def revoke_my_company(callback: types.CallbackQuery):
         await callback.answer("Не удалось убрать", show_alert=True)
         return
 
-    await callback.answer("Убрано")
-    # Переотрисуем список компаний новым сообщением
-    await bot.send_message(callback.from_user.id, "📊 Компании")
+    company_name = normalize_company_name(data.get("company_name"))
+    await callback.answer(f"Снято с отслеживания: {company_name}", show_alert=True)
+
+    # Перерисуем список в текущем сообщении
+    msg = callback.message
+    if not msg:
+        return
+
+    response = requests.get(
+        f"{API_URL}/telegram/my_companies",
+        params={"telegram_id": telegram_id},
+        headers=_api_headers(),
+    )
+    companies = response.json()
+
+    if not companies:
+        await msg.edit_text("У вас нет компаний на отслеживании.")
+        return
+
+    keyboard = []
+    for company in companies:
+        name = normalize_company_name(company.get("name"))
+        inn = company["inn"]
+        tid = company.get("tracked_id")
+        keyboard.append(
+            [
+                InlineKeyboardButton(text=f"{name} ({inn})", callback_data=f"company:{inn}"),
+                InlineKeyboardButton(text="❌ Убрать", callback_data=f"my_revoke:{tid}" if tid else "ignore"),
+            ]
+        )
+
+    await msg.edit_text("Выберите компанию:", reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard))
 
 
 
