@@ -911,6 +911,24 @@ async def save_legal_entities(callback: CallbackQuery):
 
 @dp.message(lambda m: m.text == "💰 Балансы")
 async def balances_handler(message: types.Message):
+    def _fmt_money(v, currency: str | None = None) -> str:
+        if v is None:
+            return "—"
+        try:
+            # handle numbers/strings like "12345.67"
+            s = f"{float(v):,.2f}".replace(",", " ").replace(".00", "")
+        except Exception:
+            s = str(v)
+        if currency:
+            return f"{s} {currency}"
+        return s
+
+    def _fmt_sber_amount(obj) -> tuple[str | None, str]:
+        if not isinstance(obj, dict):
+            return None, _fmt_money(obj)
+        cur = obj.get("currencyName") or obj.get("currency") or ""
+        return cur, _fmt_money(obj.get("amount"), cur)
+
     try:
         resp = requests.get(f"{API_URL}/balances/", headers=_api_headers(), timeout=90)
         resp.raise_for_status()
@@ -932,9 +950,12 @@ async def balances_handler(message: types.Message):
         else:
             lines.append("\nТочка:")
             for a in accounts:
-                lines.append(
-                    f"- {a.get('account_number')} {a.get('currency') or ''}: {a.get('end_balance')} (банк: {a.get('bank_timestamp')})"
-                )
+                acc = a.get("account_number")
+                cur = a.get("currency") or "RUB"
+                start_b = _fmt_money(a.get("start_balance"), cur)
+                end_b = _fmt_money(a.get("end_balance"), cur)
+                bank_ts = a.get("bank_timestamp") or "—"
+                lines.append(f"- {acc}: {end_b} (на начало: {start_b}, банк: {bank_ts})")
 
     sber = data.get("sber") or {}
     if "error" in sber:
@@ -945,9 +966,24 @@ async def balances_handler(message: types.Message):
         ts = sber.get("bank_timestamp")
         bal = sber.get("balances") or {}
         if bal:
-            lines.append(f"- {acc}: {bal} (банк: {ts})")
+            opening = bal.get("openingBalance") or bal.get("startBalance")
+            closing = bal.get("closingBalance") or bal.get("endBalance")
+            credit = bal.get("creditTurnover") or bal.get("incomingTurnover")
+            debit = bal.get("debitTurnover") or bal.get("outgoingTurnover")
+
+            _, opening_s = _fmt_sber_amount(opening)
+            _, closing_s = _fmt_sber_amount(closing)
+            _, credit_s = _fmt_sber_amount(credit)
+            _, debit_s = _fmt_sber_amount(debit)
+
+            lines.append(f"- Счёт: {acc}")
+            lines.append(f"  На начало: {opening_s}")
+            lines.append(f"  На конец: {closing_s}")
+            lines.append(f"  Поступления: {credit_s}")
+            lines.append(f"  Списания: {debit_s}")
+            lines.append(f"  Время банка: {ts or '—'}")
         else:
-            lines.append(f"- {acc}: summary получен (банк: {ts})")
+            lines.append(f"- {acc}: summary получен (время банка: {ts})")
 
     await message.answer("\n".join(lines))
 
