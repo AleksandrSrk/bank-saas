@@ -8,7 +8,8 @@ from app.db.dependencies import get_db
 
 from app.schemas.bank_operation import (
     BankOperationCreate,
-    BankOperationRead
+    BankOperationRead,
+    BankOperationListItem,
 ) 
 from app.models.bank_operation import BankOperation
 from app.services.company_service import get_company
@@ -37,7 +38,7 @@ def create_operations(
     return bulk_create_operations(db, company_id, operations)
 
 
-@router.get("/", response_model=list[BankOperationRead])
+@router.get("/", response_model=list[BankOperationListItem])
 def list_operations(
     company_id: UUID,
     inn: str | None = None,

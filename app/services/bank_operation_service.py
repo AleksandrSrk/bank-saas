@@ -59,13 +59,13 @@ def get_company_operations(
     )
 
     if inn:
-        stmt = stmt.where(BankOperation.inn == inn)
+        stmt = stmt.where(BankOperation.counterparty_inn == inn)
 
     if date_from:
         stmt = stmt.where(BankOperation.operation_date >= datetime.combine(date_from, time.min))
 
     if date_to:
-        stmt = stmt.where(BankOperation.operation_date >= datetime.combine(date_from, time.min))
+        stmt = stmt.where(BankOperation.operation_date <= datetime.combine(date_to, time.max))
 
     stmt = stmt.order_by(BankOperation.operation_date.desc())
 
@@ -87,13 +87,13 @@ def get_company_summary(
     )
 
     if inn:
-        stmt = stmt.where(BankOperation.inn == inn)
+        stmt = stmt.where(BankOperation.counterparty_inn == inn)
 
     if date_from:
         stmt = stmt.where(BankOperation.operation_date >= datetime.combine(date_from, time.min))
 
     if date_to:
-        stmt = stmt.where(BankOperation.operation_date >= datetime.combine(date_from, time.min))
+        stmt = stmt.where(BankOperation.operation_date <= datetime.combine(date_to, time.max))
 
     result = db.execute(stmt).first()
 
