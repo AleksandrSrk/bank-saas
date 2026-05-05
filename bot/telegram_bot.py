@@ -1052,20 +1052,26 @@ async def balances_handler(message: types.Message):
             for a in accounts:
                 acc = a.get("account_number")
                 cur = a.get("currency") or "RUB"
-                start_b = _fmt_money(a.get("start_balance"), cur) if a.get("start_balance") is not None else "—"
+                start_val = a.get("start_balance")
+                if start_val is None:
+                    start_val = a.get("derived_start_balance")
+                start_b = _fmt_money(start_val, cur) if start_val is not None else "—"
                 cur_b = _fmt_money(a.get("current_balance"), cur)
                 lines.append(f"{acc}: {cur_b} (начало дня: {start_b})")
 
-                top_in = a.get("top_in") or []
-                top_out = a.get("top_out") or []
-                if top_in:
+                ops = a.get("operations") or {}
+                inc = ops.get("incoming") or []
+                out = ops.get("outgoing") or []
+                if inc:
                     lines.append("  + Поступления:")
-                    for item in top_in[:3]:
-                        lines.append(f"    • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), cur)}")
-                if top_out:
+                    for item in inc:
+                        nm = normalize_company_name(item.get("counterparty_name"))
+                        lines.append(f"    • {nm}: {_fmt_money(item.get('amount'), cur)}")
+                if out:
                     lines.append("  - Списания:")
-                    for item in top_out[:3]:
-                        lines.append(f"    • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), cur)}")
+                    for item in out:
+                        nm = normalize_company_name(item.get("counterparty_name"))
+                        lines.append(f"    • {nm}: {_fmt_money(item.get('amount'), cur)}")
 
     sber = data.get("sber") or {}
     if "error" in sber:
@@ -1091,16 +1097,19 @@ async def balances_handler(message: types.Message):
             lines.append(f"+ Поступления: {credit_s}")
             lines.append(f"- Списания: {debit_s}")
 
-            top_in = sber.get("top_in") or []
-            top_out = sber.get("top_out") or []
-            if top_in:
-                lines.append("Поступления (топ):")
-                for item in top_in[:3]:
-                    lines.append(f"  • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), 'RUR')}")
-            if top_out:
-                lines.append("Списания (топ):")
-                for item in top_out[:3]:
-                    lines.append(f"  • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), 'RUR')}")
+            ops = sber.get("operations") or {}
+            inc = ops.get("incoming") or []
+            out = ops.get("outgoing") or []
+            if inc:
+                lines.append("  + Поступления:")
+                for item in inc:
+                    nm = normalize_company_name(item.get("counterparty_name"))
+                    lines.append(f"    • {nm}: {_fmt_money(item.get('amount'), 'RUR')}")
+            if out:
+                lines.append("  - Списания:")
+                for item in out:
+                    nm = normalize_company_name(item.get("counterparty_name"))
+                    lines.append(f"    • {nm}: {_fmt_money(item.get('amount'), 'RUR')}")
         else:
             lines.append(f"Счёт {acc}: summary получен")
 

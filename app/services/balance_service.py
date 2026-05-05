@@ -95,23 +95,55 @@ class BalanceService:
         start_dt = datetime.combine(today_date, datetime.min.time())
         end_dt = start_dt + timedelta(days=1)
 
-        def top_counterparties(account_number: str, direction: str, limit: int = 5):
-            q = (
+        def day_operations(account_number: str) -> dict[str, Any]:
+            ops = (
                 db.query(
-                    func.coalesce(BankOperation.counterparty_name, "Без названия").label("name"),
-                    func.sum(BankOperation.amount).label("total"),
+                    BankOperation.direction,
+                    BankOperation.amount,
+                    BankOperation.counterparty_name,
+                    BankOperation.description,
+                    BankOperation.operation_date,
                 )
                 .filter(
                     BankOperation.account_number == account_number,
-                    BankOperation.direction == direction,
                     BankOperation.operation_date >= start_dt,
                     BankOperation.operation_date < end_dt,
                 )
-                .group_by(func.coalesce(BankOperation.counterparty_name, "Без названия"))
-                .order_by(func.sum(BankOperation.amount).desc())
-                .limit(limit)
+                .order_by(BankOperation.operation_date.asc())
+                .all()
             )
-            return [{"name": r.name, "amount": str(r.total)} for r in q.all()]
+
+            incoming = []
+            outgoing = []
+            total_in = 0.0
+            total_out = 0.0
+
+            for d, amt, name, desc, op_dt in ops:
+                item = {
+                    "amount": str(amt),
+                    "counterparty_name": name,
+                    "description": desc,
+                    "operation_date": op_dt.isoformat() if op_dt else None,
+                }
+                if d == "incoming":
+                    incoming.append(item)
+                    try:
+                        total_in += float(amt)
+                    except Exception:
+                        pass
+                else:
+                    outgoing.append(item)
+                    try:
+                        total_out += float(amt)
+                    except Exception:
+                        pass
+
+            return {
+                "incoming": incoming,
+                "outgoing": outgoing,
+                "total_in": total_in,
+                "total_out": total_out,
+            }
 
         # ---- Tochka ----
         if "tochka" in connections:
@@ -172,30 +204,39 @@ class BalanceService:
                             cur = currency
 
                         bank_ts = current.get("dateTime") or current.get("asOfDateTime") or current.get("timestamp")
+                        ops = day_operations(account_number)
                         items.append(
                             {
                                 "account_number": account_number,
                                 "currency": cur or currency,
                                 "current_balance": amount,
+                                # compute start-of-day if bank didn't provide it:
+                                # start = current - incoming + outgoing
+                                "start_balance": None,
+                                "derived_start_balance": (
+                                    (float(str(amount)) if amount is not None else 0.0)
+                                    - float(ops["total_in"])
+                                    + float(ops["total_out"])
+                                ),
+                                "operations": ops,
                                 "source": "balances",
-                                "top_in": top_counterparties(account_number, "incoming"),
-                                "top_out": top_counterparties(account_number, "outgoing"),
                             }
                         )
                         continue
 
                     # fallback: statement-based balances for the day
                     bal = client.get_balance(account_number)
+                    ops = day_operations(account_number)
                     items.append(
                         {
                             "account_number": account_number,
                             "currency": currency,
                             "current_balance": bal.get("end_balance"),
                             "start_balance": bal.get("start_balance"),
+                            "derived_start_balance": None,
+                            "operations": ops,
                             "statement_id": bal.get("statementId"),
                             "source": "statement",
-                            "top_in": top_counterparties(account_number, "incoming"),
-                            "top_out": top_counterparties(account_number, "outgoing"),
                         }
                     )
                 result["tochka"] = {"accounts": items}
@@ -217,11 +258,11 @@ class BalanceService:
                     data = summary.get("data") or {}
 
                     extracted = BalanceService._extract_sber_balances(data)
+                    ops = day_operations(account_number)
                     result["sber"] = {
                         "account_number": account_number,
                         "balances": extracted,
-                        "top_in": top_counterparties(account_number, "incoming"),
-                        "top_out": top_counterparties(account_number, "outgoing"),
+                        "operations": ops,
                     }
             except Exception as e:
                 result["sber"] = {"error": str(e)}
