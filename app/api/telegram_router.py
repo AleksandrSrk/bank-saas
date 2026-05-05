@@ -317,12 +317,55 @@ def get_my_companies(telegram_id: int, db: Session = Depends(get_db)):
     for tracked_company, name, inn in tracked:
 
         result.append({
+            "tracked_id": str(tracked_company.id),
             "company_id": str(tracked_company.company_id),
             "name": name,
             "inn": inn
         })
 
     return result
+
+
+# ---------------- MANAGER SELF-REVOKE ----------------
+
+@router.post("/my_companies/revoke")
+def revoke_my_company(
+    telegram_id: int,
+    tracked_id: str,
+    db: Session = Depends(get_db),
+):
+    telegram_account = (
+        db.query(TelegramAccount)
+        .filter(TelegramAccount.telegram_id == telegram_id)
+        .first()
+    )
+
+    if not telegram_account:
+        return {"error": "user_not_found"}
+
+    tracked = (
+        db.query(TrackedCompany)
+        .filter(TrackedCompany.id == tracked_id, TrackedCompany.active == True)
+        .first()
+    )
+
+    if not tracked:
+        return {"error": "not_found"}
+
+    if tracked.manager_id != telegram_account.user_id:
+        return {"error": "forbidden"}
+
+    tracked.active = False
+    db.commit()
+
+    company = db.query(Company).filter(Company.id == tracked.company_id).first()
+
+    return {
+        "status": "revoked",
+        "tracked_id": tracked_id,
+        "inn": company.inn if company else None,
+        "company_name": company.name if company else None,
+    }
 
 
 # ---------------- OPERATIONS ----------------

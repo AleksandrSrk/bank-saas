@@ -174,12 +174,17 @@ async def companies_handler(message: types.Message):
 
         name = company["name"] or "Без названия"
         inn = company["inn"]
+        tracked_id = company.get("tracked_id")
 
         keyboard.append([
             InlineKeyboardButton(
                 text=f"{name} ({inn})",
                 callback_data=f"company:{inn}"
-            )
+            ),
+            InlineKeyboardButton(
+                text="❌ Убрать",
+                callback_data=f"my_revoke:{tracked_id}" if tracked_id else "ignore"
+            ),
         ])
 
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -188,6 +193,36 @@ async def companies_handler(message: types.Message):
         "Выберите компанию:",
         reply_markup=markup
     )
+
+
+@dp.callback_query(lambda c: c.data.startswith("my_revoke:"))
+async def revoke_my_company(callback: types.CallbackQuery):
+    tracked_id = callback.data.split(":", 1)[1]
+    telegram_id = callback.from_user.id
+
+    try:
+        resp = requests.post(
+            f"{API_URL}/telegram/my_companies/revoke",
+            params={"telegram_id": telegram_id, "tracked_id": tracked_id},
+            headers=_api_headers(),
+            timeout=30,
+        )
+        data = resp.json()
+    except Exception:
+        await callback.answer("Ошибка соединения", show_alert=True)
+        return
+
+    if data.get("error") == "forbidden":
+        await callback.answer("Нельзя убрать чужую компанию", show_alert=True)
+        return
+
+    if data.get("error"):
+        await callback.answer("Не удалось убрать", show_alert=True)
+        return
+
+    await callback.answer("Убрано")
+    # Переотрисуем список компаний новым сообщением
+    await bot.send_message(callback.from_user.id, "📊 Компании")
 
 
 
