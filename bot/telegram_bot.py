@@ -941,7 +941,13 @@ async def balances_handler(message: types.Message):
         lines.append(f"\nСбер: ❌ {sber['error']}")
     else:
         lines.append("\nСбер:")
-        lines.append(f"- {sber.get('account_number')}: summary получен (банк: {sber.get('bank_timestamp')})")
+        acc = sber.get("account_number")
+        ts = sber.get("bank_timestamp")
+        bal = sber.get("balances") or {}
+        if bal:
+            lines.append(f"- {acc}: {bal} (банк: {ts})")
+        else:
+            lines.append(f"- {acc}: summary получен (банк: {ts})")
 
     await message.answer("\n".join(lines))
 

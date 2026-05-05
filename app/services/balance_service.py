@@ -12,6 +12,56 @@ from app.models.bank_connection import BankConnection
 
 class BalanceService:
     @staticmethod
+    def _extract_sber_balances(summary: dict) -> dict:
+        """
+        Best-effort extraction of balances from Sber summary response.
+        Different scopes/versions can return different shapes, so we keep it defensive.
+        """
+        out: dict = {}
+        if not isinstance(summary, dict):
+            return out
+
+        # Common-ish keys that may appear in summary responses
+        for key in (
+            "openingBalance",
+            "closingBalance",
+            "startBalance",
+            "endBalance",
+            "incomingTurnover",
+            "outgoingTurnover",
+            "creditTurnover",
+            "debitTurnover",
+            "currency",
+        ):
+            if key in summary:
+                out[key] = summary.get(key)
+
+        # Some APIs nest in Data/Statement-like objects; try a couple of paths
+        for path in (("data",), ("Data",), ("Data", "Summary"), ("summary",)):
+            cur = summary
+            ok = True
+            for p in path:
+                if isinstance(cur, dict) and p in cur:
+                    cur = cur[p]
+                else:
+                    ok = False
+                    break
+            if ok and isinstance(cur, dict):
+                for key in (
+                    "openingBalance",
+                    "closingBalance",
+                    "startBalance",
+                    "endBalance",
+                    "incomingTurnover",
+                    "outgoingTurnover",
+                    "currency",
+                ):
+                    if key in cur and key not in out:
+                        out[key] = cur.get(key)
+
+        return out
+
+    @staticmethod
     def get_balances(db: Session) -> dict[str, Any]:
         now_utc = datetime.utcnow().isoformat() + "Z"
         today = date.today().strftime("%Y-%m-%d")
@@ -65,11 +115,12 @@ class BalanceService:
                     summary = client.get_summary(account_number=account_number, date=today)
                     data = summary.get("data") or {}
 
-                    # Best-effort extraction; exact keys depend on API schema.
+                    extracted = BalanceService._extract_sber_balances(data)
                     result["sber"] = {
                         "account_number": account_number,
                         "bank_timestamp": summary.get("server_date"),
-                        "summary": data,
+                        "balances": extracted,
+                        "raw_summary": data,
                     }
             except Exception as e:
                 result["sber"] = {"error": str(e)}

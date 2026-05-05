@@ -58,6 +58,13 @@ class BankTokenService:
             }
         )
 
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            body = (response.text or "").strip()
+            msg = f"Tochka token refresh failed ({response.status_code})"
+            if body:
+                msg += f": {body[:800]}"
+            raise RuntimeError(msg) from e
 
         return response.json()
