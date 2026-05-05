@@ -10,9 +10,6 @@ scheduler = BackgroundScheduler()
 
 
 def run_bank_sync():
-
-    print("🔄 Sync started")
-
     db = SessionLocal()
 
     try:
@@ -24,10 +21,10 @@ def run_bank_sync():
         operation_service = OperationSyncService(db)
         operation_service.sync_operations()
 
-        print("✅ Sync finished")
-
     except Exception as e:
-        print("❌ Sync error:", e)
+        # Avoid printing sensitive runtime context to stdout.
+        # If needed, add structured logging with redaction.
+        raise
 
     finally:
         db.close()

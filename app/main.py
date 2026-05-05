@@ -13,16 +13,18 @@ from app.services.sync_scheduler import start_scheduler
 
 from app.api.telegram_router import router as telegram_router
 from app.scripts.seed_roles import seed_roles
+from app.config.settings import settings
+from app.security.api_key import require_api_key
 
 app = FastAPI()
 
-app.include_router(company_router)
-app.include_router(bank_operation_router)
-app.include_router(import_router)
-app.include_router(bank_connection_router)
-app.include_router(bank_sync_router)
+app.include_router(company_router, dependencies=[Depends(require_api_key)])
+app.include_router(bank_operation_router, dependencies=[Depends(require_api_key)])
+app.include_router(import_router, dependencies=[Depends(require_api_key)])
+app.include_router(bank_connection_router, dependencies=[Depends(require_api_key)])
+app.include_router(bank_sync_router, dependencies=[Depends(require_api_key)])
 
-app.include_router(telegram_router)
+app.include_router(telegram_router, dependencies=[Depends(require_api_key)])
 
 
 @app.on_event("startup")
@@ -37,7 +39,8 @@ def healthcheck():
         return {"db_check": result.scalar()}
 
 
-@app.get("/db-test")
-def db_test(db: Session = Depends(get_db)):
-    result = db.execute(text("SELECT 1"))
-    return {"result": result.scalar()}
+if getattr(settings, "DEBUG", False):
+    @app.get("/db-test")
+    def db_test(db: Session = Depends(get_db)):
+        result = db.execute(text("SELECT 1"))
+        return {"result": result.scalar()}

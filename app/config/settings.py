@@ -20,6 +20,8 @@ class Settings(BaseSettings):
 
     SBER_ACCESS_TOKEN: str | None = None
     SBER_BOOTSTRAP_ACCOUNT: str | None = None
+    DEBUG: bool = False
+    INTERNAL_API_KEY: str | None = None
 
     class Config:
         env_file = ".env"

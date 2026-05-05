@@ -1,9 +1,5 @@
-import requests
 import os
-from dotenv import load_dotenv
-
-
-load_dotenv()
+import requests
 
 class SberClient:
 
@@ -18,10 +14,6 @@ class SberClient:
 
         # цепочка доверенных сертификатов (у тебя это sber_chain.pem)
         self.verify = False
-
-        # ⚠️ ПОКА оставляем хардкод (потом вынесем в env)
-        
-        print("TOKEN:", os.getenv("SBER_ACCESS_TOKEN"))
 
         self.headers = {
             "Authorization": f"Bearer {os.getenv('SBER_ACCESS_TOKEN')}"
@@ -46,14 +38,7 @@ class SberClient:
             timeout=30
         )
 
-        print("SBER STATUS:", response.status_code)
-        print("SBER RESPONSE:", response.text[:500])
-
-        print("SBER URL:", response.request.url)
-        print("SBER METHOD:", response.request.method)
-        print("SBER HEADERS:", response.request.headers)
-        print("SBER BODY:", response.request.body)
-        print("SBER RESPONSE:", response.text)
+        # IMPORTANT: do not log tokens/headers/body/response here (docker logs are sensitive).
 
         response.raise_for_status()
 

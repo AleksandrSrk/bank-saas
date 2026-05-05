@@ -58,14 +58,6 @@ class BankTokenService:
             }
         )
 
-        print("TOCHKA REFRESH RESPONSE:", response.text)
-        print("PAYLOAD:", payload)
-        print("AUTH:", settings.TOCHKA_CLIENT_ID, settings.TOCHKA_CLIENT_SECRET)
-        print("REQUEST HEADERS:", response.request.headers)
-        print("REQUEST BODY:", response.request.body)
-
-
-
         response.raise_for_status()
 
         return response.json()
