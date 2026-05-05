@@ -897,6 +897,15 @@ async def save_legal_entities(callback: CallbackQuery):
             headers=_api_headers(),
         )
 
+        if user_request.get("telegram_id"):
+            await bot.send_message(
+                user_request["telegram_id"],
+                "✅ Вы добавлены в систему"
+            )
+
+    await callback.message.edit_text("✅ Доступ сохранён")
+    await callback.answer()
+
 
 # ---------------- BALANCES (director) ----------------
 
@@ -935,15 +944,6 @@ async def balances_handler(message: types.Message):
         lines.append(f"- {sber.get('account_number')}: summary получен (банк: {sber.get('bank_timestamp')})")
 
     await message.answer("\n".join(lines))
-
-        if user_request.get("telegram_id"):
-            await bot.send_message(
-                user_request["telegram_id"],
-                "✅ Вы добавлены в систему"
-            )
-
-    await callback.message.edit_text("✅ Доступ сохранён")
-    await callback.answer()
 
 # ---------------- ЗАПУСК БОТА ----------------
 
