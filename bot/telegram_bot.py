@@ -637,10 +637,11 @@ async def show_managers(message: types.Message):
             for company in companies:
 
                 tracked_id = company["tracked_id"]
+                company_name = normalize_company_name(company.get("name"))
 
                 keyboard.inline_keyboard.append([
                     InlineKeyboardButton(
-                        text=f'{company["name"]} ({company["inn"]})',
+                        text=f"{company_name} ({company['inn']})",
                         callback_data="ignore"
                     ),
                     InlineKeyboardButton(
