@@ -46,18 +46,15 @@ def normalize_company_name(raw: str | None) -> str:
     name = raw.strip()
     name = _OOO_LONG_RE.sub("ООО ", name).strip()
 
-    # If starts with ООО already, keep it as prefix.
-    starts_with_ooo = name.upper().startswith("ООО")
-
     # Remove all ООО tokens, then re-add a single prefix if it was present anywhere.
     had_ooo_anywhere = bool(_OOO_WORD_RE.search(name))
     cleaned = _OOO_WORD_RE.sub("", name)
     cleaned = re.sub(r"\s+", " ", cleaned).strip(" \"'«»")
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
-    if had_ooo_anywhere or starts_with_ooo:
+    if had_ooo_anywhere:
         if cleaned:
-            return f"ООО {cleaned}"
+            return f"{cleaned}, ООО"
         return "ООО"
 
     return cleaned or "Без названия"
