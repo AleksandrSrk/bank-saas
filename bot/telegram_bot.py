@@ -1013,8 +1013,8 @@ async def balances_handler(message: types.Message):
         if v is None:
             return "—"
         try:
-            # handle numbers/strings like "12345.67"
-            s = f"{float(v):,.2f}".replace(",", " ").replace(".00", "")
+            # Keep sign; handle strings like "-12345.67"
+            s = f"{float(str(v).replace(' ', '')):,.2f}".replace(",", " ").replace(".00", "")
         except Exception:
             s = str(v)
         if currency:
@@ -1036,34 +1036,44 @@ async def balances_handler(message: types.Message):
         return
 
     lines = []
-    lines.append(f"⏱ Запрос: {data.get('requested_at_utc', '-')}")
+    # compact output, no timestamps
 
     tochka = data.get("tochka") or {}
     if "error" in tochka:
-        lines.append(f"\nТочка: ❌ {tochka['error']}")
+        lines.append("<b>Точка</b>")
+        lines.append(f"❌ {tochka['error']}")
     else:
         accounts = (tochka.get("accounts") or [])
         if not accounts:
-            lines.append("\nТочка: нет счетов/данных")
+            lines.append("<b>Точка</b>")
+            lines.append("Нет счетов/данных")
         else:
-            lines.append("\nТочка:")
+            lines.append("<b>Точка</b>")
             for a in accounts:
                 acc = a.get("account_number")
                 cur = a.get("currency") or "RUB"
-                start_b = _fmt_money(a.get("start_balance"), cur)
-                end_b = _fmt_money(a.get("current_balance"), cur)
-                bank_ts = a.get("bank_timestamp") or "—"
-                source = a.get("source")
-                suffix = f", источник: {source}" if source else ""
-                lines.append(f"- {acc}: {end_b} (на начало: {start_b}, банк: {bank_ts}{suffix})")
+                start_b = _fmt_money(a.get("start_balance"), cur) if a.get("start_balance") is not None else "—"
+                cur_b = _fmt_money(a.get("current_balance"), cur)
+                lines.append(f"{acc}: {cur_b} (начало дня: {start_b})")
+
+                top_in = a.get("top_in") or []
+                top_out = a.get("top_out") or []
+                if top_in:
+                    lines.append("  + Поступления:")
+                    for item in top_in[:3]:
+                        lines.append(f"    • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), cur)}")
+                if top_out:
+                    lines.append("  - Списания:")
+                    for item in top_out[:3]:
+                        lines.append(f"    • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), cur)}")
 
     sber = data.get("sber") or {}
     if "error" in sber:
-        lines.append(f"\nСбер: ❌ {sber['error']}")
+        lines.append("\n<b>Сбер</b>")
+        lines.append(f"❌ {sber['error']}")
     else:
-        lines.append("\nСбер:")
+        lines.append("\n<b>Сбер</b>")
         acc = sber.get("account_number")
-        ts = sber.get("bank_timestamp")
         bal = sber.get("balances") or {}
         if bal:
             opening = bal.get("openingBalance") or bal.get("startBalance")
@@ -1076,16 +1086,25 @@ async def balances_handler(message: types.Message):
             _, credit_s = _fmt_sber_amount(credit)
             _, debit_s = _fmt_sber_amount(debit)
 
-            lines.append(f"- Счёт: {acc}")
-            lines.append(f"  На начало: {opening_s}")
-            lines.append(f"  На конец: {closing_s}")
-            lines.append(f"  Поступления: {credit_s}")
-            lines.append(f"  Списания: {debit_s}")
-            lines.append(f"  Время банка: {ts or '—'}")
-        else:
-            lines.append(f"- {acc}: summary получен (время банка: {ts})")
+            lines.append(f"Счёт {acc}")
+            lines.append(f"Начало дня: {opening_s} → Текущий: {closing_s}")
+            lines.append(f"+ Поступления: {credit_s}")
+            lines.append(f"- Списания: {debit_s}")
 
-    await message.answer("\n".join(lines))
+            top_in = sber.get("top_in") or []
+            top_out = sber.get("top_out") or []
+            if top_in:
+                lines.append("Поступления (топ):")
+                for item in top_in[:3]:
+                    lines.append(f"  • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), 'RUR')}")
+            if top_out:
+                lines.append("Списания (топ):")
+                for item in top_out[:3]:
+                    lines.append(f"  • {normalize_company_name(item.get('name'))}: {_fmt_money(item.get('amount'), 'RUR')}")
+        else:
+            lines.append(f"Счёт {acc}: summary получен")
+
+    await message.answer("\n".join(lines), parse_mode="HTML")
 
 # ---------------- ЗАПУСК БОТА ----------------
 

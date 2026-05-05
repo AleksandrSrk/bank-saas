@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import time
 from typing import Any
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.integrations.banks.sber.client import SberClient
 from app.integrations.banks.tochka.client import TochkaClient
 from app.models.bank_connection import BankConnection
+from app.models.bank_operation import BankOperation
 
 
 class BalanceService:
@@ -89,6 +91,27 @@ class BalanceService:
         }
 
         connections = {c.bank_name: c for c in db.query(BankConnection).all()}
+        today_date = date.today()
+        start_dt = datetime.combine(today_date, datetime.min.time())
+        end_dt = start_dt + timedelta(days=1)
+
+        def top_counterparties(account_number: str, direction: str, limit: int = 5):
+            q = (
+                db.query(
+                    func.coalesce(BankOperation.counterparty_name, "Без названия").label("name"),
+                    func.sum(BankOperation.amount).label("total"),
+                )
+                .filter(
+                    BankOperation.account_number == account_number,
+                    BankOperation.direction == direction,
+                    BankOperation.operation_date >= start_dt,
+                    BankOperation.operation_date < end_dt,
+                )
+                .group_by(func.coalesce(BankOperation.counterparty_name, "Без названия"))
+                .order_by(func.sum(BankOperation.amount).desc())
+                .limit(limit)
+            )
+            return [{"name": r.name, "amount": str(r.total)} for r in q.all()]
 
         # ---- Tochka ----
         if "tochka" in connections:
@@ -154,8 +177,9 @@ class BalanceService:
                                 "account_number": account_number,
                                 "currency": cur or currency,
                                 "current_balance": amount,
-                                "bank_timestamp": bank_ts,
                                 "source": "balances",
+                                "top_in": top_counterparties(account_number, "incoming"),
+                                "top_out": top_counterparties(account_number, "outgoing"),
                             }
                         )
                         continue
@@ -168,9 +192,10 @@ class BalanceService:
                             "currency": currency,
                             "current_balance": bal.get("end_balance"),
                             "start_balance": bal.get("start_balance"),
-                            "bank_timestamp": bal.get("bank_timestamp"),
                             "statement_id": bal.get("statementId"),
                             "source": "statement",
+                            "top_in": top_counterparties(account_number, "incoming"),
+                            "top_out": top_counterparties(account_number, "outgoing"),
                         }
                     )
                 result["tochka"] = {"accounts": items}
@@ -194,9 +219,9 @@ class BalanceService:
                     extracted = BalanceService._extract_sber_balances(data)
                     result["sber"] = {
                         "account_number": account_number,
-                        "bank_timestamp": summary.get("server_date"),
                         "balances": extracted,
-                        "raw_summary": data,
+                        "top_in": top_counterparties(account_number, "incoming"),
+                        "top_out": top_counterparties(account_number, "outgoing"),
                     }
             except Exception as e:
                 result["sber"] = {"error": str(e)}
