@@ -953,9 +953,11 @@ async def balances_handler(message: types.Message):
                 acc = a.get("account_number")
                 cur = a.get("currency") or "RUB"
                 start_b = _fmt_money(a.get("start_balance"), cur)
-                end_b = _fmt_money(a.get("end_balance"), cur)
+                end_b = _fmt_money(a.get("current_balance"), cur)
                 bank_ts = a.get("bank_timestamp") or "—"
-                lines.append(f"- {acc}: {end_b} (на начало: {start_b}, банк: {bank_ts})")
+                source = a.get("source")
+                suffix = f", источник: {source}" if source else ""
+                lines.append(f"- {acc}: {end_b} (на начало: {start_b}, банк: {bank_ts}{suffix})")
 
     sber = data.get("sber") or {}
     if "error" in sber:

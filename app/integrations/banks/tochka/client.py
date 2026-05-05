@@ -164,3 +164,12 @@ class TochkaClient:
         data = self._request("GET", url)
 
         return data
+
+    def get_balances_list(self):
+        """
+        Get current balances for multiple accounts (preferred over statements).
+        Endpoint: /open-banking/v1.0/balances
+        Shape can vary; caller should parse defensively.
+        """
+        url = f"{self.rs_url}/open-banking/v1.0/balances"
+        return self._request("GET", url)

@@ -10,5 +10,5 @@ router = APIRouter(prefix="/balances", tags=["balances"])
 
 @router.get("/")
 def get_balances(db: Session = Depends(get_db)):
-    return BalanceService.get_balances(db)
+    return BalanceService.get_balances_cached(db, ttl_seconds=60)
 
