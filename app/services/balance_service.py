@@ -170,8 +170,17 @@ class BalanceService:
                             if not isinstance(b, dict):
                                 continue
                             acc_id = b.get("accountId") or b.get("account_id")
-                            if acc_id:
-                                balances_map[str(acc_id)] = b
+                            if not acc_id:
+                                continue
+                            # Normalize key to account_number only (strip /BIC suffix)
+                            acc_key = str(acc_id).split("/")[0]
+                            b_type = b.get("type", "")
+                            existing = balances_map.get(acc_key)
+                            # Prefer OpeningAvailable or ClosingAvailable over Expected
+                            if existing is None:
+                                balances_map[acc_key] = b
+                            elif b_type in ("OpeningAvailable", "ClosingAvailable") and existing.get("type") not in ("OpeningAvailable", "ClosingAvailable"):
+                                balances_map[acc_key] = b
                 except Exception:
                     # If the endpoint isn't available / returns unexpected shape, fallback to statements.
                     balances_map = {}
@@ -187,7 +196,7 @@ class BalanceService:
                         continue
 
                     account_number = account_id.split("/")[0]
-                    current = balances_map.get(str(account_id))
+                    current = balances_map.get(account_number)
                     if current:
                         # best-effort parse current balance fields
                         amt_obj = (
