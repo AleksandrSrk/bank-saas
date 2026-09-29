@@ -68,6 +68,59 @@ class DirectorSearch(StatesGroup):
     waiting_for_query = State()
 
 
+# ---------------- ДЛИННЫЕ СООБЩЕНИЯ (лимит Telegram — 4096 символов) ----------------
+
+TELEGRAM_MESSAGE_LIMIT = 4096
+_CHUNK_BUDGET = TELEGRAM_MESSAGE_LIMIT - 250  # запас под предупреждение
+
+
+async def send_chunked(message, text: str, keyboard=None):
+    """
+    Отправляет текст, разбивая на несколько сообщений, если он не влезает
+    в лимит Telegram (4096 символов). Первое сообщение редактирует исходное,
+    остальные отправляет новыми. Режет по границам строк, операцию не рвёт.
+    Клавиатура (если есть) вешается только на последнее сообщение.
+    """
+
+    if len(text) <= TELEGRAM_MESSAGE_LIMIT:
+        await message.edit_text(text, reply_markup=keyboard)
+        return
+
+    lines = text.split("\n")
+    chunks = []
+    current = ""
+
+    for line in lines:
+        candidate = current + line + "\n"
+        if len(candidate) > _CHUNK_BUDGET:
+            if current:
+                chunks.append(current)
+            current = line + "\n"
+        else:
+            current = candidate
+
+    if current:
+        chunks.append(current)
+
+    total = len(chunks)
+
+    first_text = (
+        f"⚠️ Сообщение не влезает в лимит Telegram, разбито на {total} части(ей).\n\n"
+        + chunks[0]
+    )
+
+    if total == 1:
+        # после разбивки по бюджету всё влезло в одну часть — клавиатуру вешаем сразу
+        await message.edit_text(first_text, reply_markup=keyboard)
+        return
+
+    await message.edit_text(first_text)
+
+    for i, chunk in enumerate(chunks[1:], start=2):
+        is_last = (i == total)
+        await message.answer(chunk, reply_markup=keyboard if is_last else None)
+
+
 # ---------------- MENUS ----------------
 
 director_menu = ReplyKeyboardMarkup(
@@ -353,7 +406,7 @@ async def show_operations(callback: types.CallbackQuery):
         ]
     )
 
-    await callback.message.edit_text(text, reply_markup=keyboard)
+    await send_chunked(callback.message, text, keyboard)
     await callback.answer()
 
 #____________________детали операций____________________
@@ -403,7 +456,7 @@ async def show_details(callback: types.CallbackQuery):
         text += f"{op['date']} {sign}{op['amount']}\n"
         text += f"{op['description']}\n\n"
 
-    await callback.message.edit_text(text)
+    await send_chunked(callback.message, text)
     await callback.answer()
 
 #____________________компания____________________
@@ -1260,7 +1313,7 @@ async def director_show_operations(callback: types.CallbackQuery):
         ]
     )
 
-    await callback.message.edit_text(text, reply_markup=keyboard)
+    await send_chunked(callback.message, text, keyboard)
     await callback.answer()
 
 
@@ -1306,7 +1359,7 @@ async def director_show_details(callback: types.CallbackQuery):
         text += f"{op['date']} {sign}{op['amount']}\n"
         text += f"{op['description']}\n\n"
 
-    await callback.message.edit_text(text)
+    await send_chunked(callback.message, text)
     await callback.answer()
 
 # ---------------- ЗАПУСК БОТА ----------------
