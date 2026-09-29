@@ -14,7 +14,8 @@ class BankOperationRepository:
         manager_id,
         inn: str,
         days: int,
-        details: bool = False
+        details: bool = False,
+        unrestricted: bool = False
     ):
 
         # ------------------------------------------------
@@ -56,32 +57,46 @@ class BankOperationRepository:
             }
 
         # ------------------------------------------------
-        # доступные юрлица менеджера
+        # доступные юрлица
         # ------------------------------------------------
 
-        user_entities = (
-            db.query(UserCompany.legal_entity_id)
-            .filter(
-                UserCompany.user_id == manager_id,
-                UserCompany.legal_entity_id != None
+        if unrestricted:
+            # директорский режим: не фильтруем по user_companies,
+            # берём все юрлица, по которым вообще есть операции этой компании
+            entity_rows = (
+                db.query(BankOperation.legal_entity_id)
+                .filter(
+                    BankOperation.counterparty_inn == inn,
+                    BankOperation.legal_entity_id != None
+                )
+                .distinct()
+                .all()
             )
-            .all()
-        )
+            entity_ids = [e[0] for e in entity_rows]
+        else:
+            user_entities = (
+                db.query(UserCompany.legal_entity_id)
+                .filter(
+                    UserCompany.user_id == manager_id,
+                    UserCompany.legal_entity_id != None
+                )
+                .all()
+            )
 
-        entity_ids = [e[0] for e in user_entities]
+            entity_ids = [e[0] for e in user_entities]
 
-        # ❗ вообще нет доступа к юрлицам
-        if not entity_ids:
-            if not has_any_operations:
-                return {
-                    "company_name": company_name,
-                    "inn": inn,
-                    "total_in": 0,
-                    "total_out": 0,
-                    "operations": []
-                }
+            # ❗ вообще нет доступа к юрлицам
+            if not entity_ids:
+                if not has_any_operations:
+                    return {
+                        "company_name": company_name,
+                        "inn": inn,
+                        "total_in": 0,
+                        "total_out": 0,
+                        "operations": []
+                    }
 
-            return {"error": "access_denied"}
+                return {"error": "access_denied"}
 
         # ------------------------------------------------
         # есть ли операции в ДОСТУПНЫХ юрлицах

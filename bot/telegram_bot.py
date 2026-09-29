@@ -64,13 +64,18 @@ class RequestCompany(StatesGroup):
     waiting_for_inn = State()
 
 
+class DirectorSearch(StatesGroup):
+    waiting_for_query = State()
+
+
 # ---------------- MENUS ----------------
 
 director_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="👥 Менеджеры")],
         [KeyboardButton(text="🏢 Доступ к юрлицам")],
-        [KeyboardButton(text="💰 Балансы")]
+        [KeyboardButton(text="💰 Балансы")],
+        [KeyboardButton(text="🔍 Поиск по компании")]
     ],
     resize_keyboard=True
 )
@@ -329,7 +334,7 @@ async def show_operations(callback: types.CallbackQuery):
 
     text = f"{name}\nза {days} дней\n\n"
 
-    for op in operations[:10]:
+    for op in operations:
         sign = "+" if op["direction"] == "incoming" else "-"
         text += f"{op['date']}  {sign}{op['amount']}\n"
 
@@ -393,7 +398,7 @@ async def show_details(callback: types.CallbackQuery):
 
     text = f"{name}\nдетали\n\n"
 
-    for op in operations[:10]:
+    for op in operations:
         sign = "+" if op["direction"] == "incoming" else "-"
         text += f"{op['date']} {sign}{op['amount']}\n"
         text += f"{op['description']}\n\n"
@@ -1114,6 +1119,195 @@ async def balances_handler(message: types.Message):
             lines.append(f"Счёт {acc}: summary получен")
 
     await message.answer("\n".join(lines), parse_mode="HTML")
+
+# ---------------- ПОИСК ПО КОМПАНИИ (директор) ----------------
+
+@dp.message(lambda m: m.text == "🔍 Поиск по компании")
+async def director_search_start(message: Message, state: FSMContext):
+    await state.set_state(DirectorSearch.waiting_for_query)
+    await message.answer("Введите название компании или ИНН:")
+
+
+@dp.message(DirectorSearch.waiting_for_query)
+async def director_search_query(message: Message, state: FSMContext):
+
+    await state.clear()
+
+    telegram_id = message.from_user.id
+    query = (message.text or "").strip()
+
+    response = requests.get(
+        f"{API_URL}/director/companies/search",
+        params={"telegram_id": telegram_id, "q": query},
+        headers=_api_headers(),
+    )
+    data = response.json()
+
+    if data.get("error") == "forbidden":
+        await message.answer("🔒 Доступно только директору")
+        return
+
+    companies = data.get("companies", [])
+
+    if not companies:
+        await message.answer("Ничего не найдено")
+        return
+
+    keyboard = []
+    for c in companies:
+        name = normalize_company_name(c.get("name"))
+        inn = c["inn"]
+        keyboard.append([
+            InlineKeyboardButton(text=f"{name} ({inn})", callback_data=f"dcompany:{inn}")
+        ])
+
+    await message.answer(
+        "Выберите компанию:",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard)
+    )
+
+
+@dp.callback_query(lambda c: c.data.startswith("dcompany"))
+async def director_company_selected(callback: types.CallbackQuery):
+
+    _, inn = callback.data.split(":")
+
+    telegram_id = callback.from_user.id
+
+    response = requests.get(
+        f"{API_URL}/director/companies/search",
+        params={"telegram_id": telegram_id, "q": inn},
+        headers=_api_headers(),
+    )
+    data = response.json()
+    companies = data.get("companies", [])
+
+    name = "Компания"
+    for c in companies:
+        if c["inn"] == inn:
+            name = c["name"]
+            break
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="1 день", callback_data=f"dperiod:{inn}:1"),
+                InlineKeyboardButton(text="5 дней", callback_data=f"dperiod:{inn}:5"),
+                InlineKeyboardButton(text="30 дней", callback_data=f"dperiod:{inn}:30")
+            ]
+        ]
+    )
+
+    await callback.message.edit_text(
+        f"{normalize_company_name(name)}\n\nВыберите период:",
+        reply_markup=keyboard
+    )
+    await callback.answer()
+
+
+@dp.callback_query(lambda c: c.data.startswith("dperiod"))
+async def director_show_operations(callback: types.CallbackQuery):
+
+    _, inn, days = callback.data.split(":")
+
+    telegram_id = callback.from_user.id
+
+    response = requests.get(
+        f"{API_URL}/director/company_operations",
+        params={
+            "telegram_id": telegram_id,
+            "inn": inn,
+            "days": days
+        },
+        headers=_api_headers(),
+    )
+
+    data = response.json()
+
+    if data.get("error") == "forbidden":
+        await callback.message.edit_text("🔒 Доступно только директору")
+        await callback.answer()
+        return
+
+    operations = data.get("operations", [])
+    name = data.get("company_name", "Компания")
+
+    if not operations:
+        await callback.message.edit_text(
+            f"{name}\n\n❌ За {days} дней нет операций"
+        )
+        await callback.answer()
+        return
+
+    text = f"{name}\nза {days} дней\n\n"
+
+    for op in operations:
+        sign = "+" if op["direction"] == "incoming" else "-"
+        text += f"{op['date']}  {sign}{op['amount']}\n"
+
+    text += "\n"
+    text += f"Входящие: {data.get('total_in', 0)}\n"
+    text += f"Исходящие: {data.get('total_out', 0)}"
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Показать детали",
+                    callback_data=f"ddetails:{inn}:{days}"
+                )
+            ]
+        ]
+    )
+
+    await callback.message.edit_text(text, reply_markup=keyboard)
+    await callback.answer()
+
+
+@dp.callback_query(lambda c: c.data.startswith("ddetails"))
+async def director_show_details(callback: types.CallbackQuery):
+
+    _, inn, days = callback.data.split(":")
+
+    telegram_id = callback.from_user.id
+
+    response = requests.get(
+        f"{API_URL}/director/company_operations",
+        params={
+            "telegram_id": telegram_id,
+            "inn": inn,
+            "days": days,
+            "details": True
+        },
+        headers=_api_headers(),
+    )
+
+    data = response.json()
+
+    if data.get("error") == "forbidden":
+        await callback.message.edit_text("🔒 Доступно только директору")
+        await callback.answer()
+        return
+
+    name = data.get("company_name", "Компания")
+    operations = data.get("operations", [])
+
+    if not operations:
+        await callback.message.edit_text(
+            f"{name}\n\n❌ Нет операций"
+        )
+        await callback.answer()
+        return
+
+    text = f"{name}\nдетали\n\n"
+
+    for op in operations:
+        sign = "+" if op["direction"] == "incoming" else "-"
+        text += f"{op['date']} {sign}{op['amount']}\n"
+        text += f"{op['description']}\n\n"
+
+    await callback.message.edit_text(text)
+    await callback.answer()
 
 # ---------------- ЗАПУСК БОТА ----------------
 

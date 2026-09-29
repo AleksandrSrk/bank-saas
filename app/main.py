@@ -14,6 +14,7 @@ from app.services.sync_scheduler import start_scheduler
 
 from app.api.telegram_router import router as telegram_router
 from app.api.tochka_oauth_router import router as tochka_oauth_router
+from app.api.director_router import router as director_router
 from app.scripts.seed_roles import seed_roles
 from app.config.settings import settings
 from app.security.api_key import require_api_key
@@ -28,6 +29,7 @@ app.include_router(bank_sync_router, dependencies=[Depends(require_api_key)])
 app.include_router(balance_router, dependencies=[Depends(require_api_key)])
 
 app.include_router(telegram_router, dependencies=[Depends(require_api_key)])
+app.include_router(director_router, dependencies=[Depends(require_api_key)])
 
 # без require_api_key: сюда стучится сама Точка, а не наш бот/фронт
 app.include_router(tochka_oauth_router)
