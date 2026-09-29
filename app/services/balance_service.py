@@ -165,6 +165,16 @@ class BalanceService:
                     )
                     if isinstance(items, dict):
                         items = [items]
+                    # Приоритет типов баланса: ClosingAvailable — актуальный баланс счёта
+                    # на конец периода (с учётом всех списаний, включая по исполнительным
+                    # листам), OpeningAvailable — на начало, Expected — плановый/ожидаемый.
+                    # Раньше выбор зависел от порядка прихода типов в ответе банка и мог
+                    # застрять на OpeningAvailable (обычно 0), даже если счёт реально в минусе.
+                    balance_type_priority = {
+                        "ClosingAvailable": 3,
+                        "OpeningAvailable": 2,
+                        "Expected": 1,
+                    }
                     if isinstance(items, list):
                         for b in items:
                             if not isinstance(b, dict):
@@ -175,11 +185,10 @@ class BalanceService:
                             # Normalize key to account_number only (strip /BIC suffix)
                             acc_key = str(acc_id).split("/")[0]
                             b_type = b.get("type", "")
+                            b_prio = balance_type_priority.get(b_type, 0)
                             existing = balances_map.get(acc_key)
-                            # Prefer OpeningAvailable or ClosingAvailable over Expected
-                            if existing is None:
-                                balances_map[acc_key] = b
-                            elif b_type in ("OpeningAvailable", "ClosingAvailable") and existing.get("type") not in ("OpeningAvailable", "ClosingAvailable"):
+                            existing_prio = balance_type_priority.get(existing.get("type", "") if existing else "", -1)
+                            if existing is None or b_prio > existing_prio:
                                 balances_map[acc_key] = b
                 except Exception:
                     # If the endpoint isn't available / returns unexpected shape, fallback to statements.
