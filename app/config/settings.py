@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     TOCHKA_API_URL: str = "https://enter.tochka.com/uapi/open-banking/v1.0"
     TOCHKA_TOKEN_URL: str = "https://enter.tochka.com/connect/token"
+    TOCHKA_REDIRECT_URI: str | None = None
 
     # DaData
     DADATA_API_KEY: str
