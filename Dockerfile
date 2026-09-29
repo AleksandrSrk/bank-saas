@@ -5,11 +5,13 @@ WORKDIR /app
 # Точка (tochka.com) отдаёт сертификат, подписанный Минцифры РФ
 # (Russian Trusted Root/Sub CA) — его нет в стандартном доверенном
 # наборе Debian, ставим руками, иначе SSL-хендшейк падает.
+# Официальный gu-st.ru периодически меняет пути раздачи, поэтому
+# берём из отслеживаемого GitHub-зеркала (koenrh/russian-trusted-root-ca).
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
     && curl -fsSL -o /usr/local/share/ca-certificates/russian_trusted_root_ca.crt \
-       https://gu-st.ru/content/Other/doc/russian_trusted_root_ca_pem.crt \
+       https://raw.githubusercontent.com/koenrh/russian-trusted-root-ca/main/root-ca_rsa-2022.pem \
     && curl -fsSL -o /usr/local/share/ca-certificates/russian_trusted_sub_ca.crt \
-       https://gu-st.ru/content/Other/doc/russian_trusted_sub_ca_pem.crt \
+       https://raw.githubusercontent.com/koenrh/russian-trusted-root-ca/main/sub-ca_rsa-2022.pem \
     && update-ca-certificates \
     && apt-get purge -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
