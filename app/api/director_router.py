@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func, desc
 
 from app.db.dependencies import get_db
 from app.models.telegram_account import TelegramAccount
@@ -64,13 +64,18 @@ def search_companies(telegram_id: int, q: str, db: Session = Depends(get_db)):
         .all()
     )
 
-    # если по подстроке ничего — пробуем нечёткий поиск (опечатки) через pg_trgm
+    # если по подстроке ничего — пробуем нечёткий поиск (опечатки) через pg_trgm.
+    # word_similarity сравнивает запрос с лучшим совпадающим "словом" внутри
+    # названия — так короткий запрос не размывается длинным названием компании.
+    # Порог 0.4 подобран вручную: ниже — слишком много случайных совпадений
+    # по ФИО физлиц (общие слоги), выше — не ловит опечатку в одну букву.
     if not companies:
+        score = func.word_similarity(q, Company.name)
         companies = (
             db.query(Company)
-            .filter(Company.name.op("%")(q))
-            .order_by(Company.name.op("<->")(q))
-            .limit(20)
+            .filter(score >= 0.4)
+            .order_by(desc(score))
+            .limit(10)
             .all()
         )
 
