@@ -56,3 +56,6 @@ certs/
 dump.sql
 
 logs/
+
+# Google Drive service account — секрет для бэкапа в Drive
+service_account.json

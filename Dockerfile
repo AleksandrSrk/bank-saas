@@ -7,7 +7,7 @@ WORKDIR /app
 # наборе Debian, ставим руками, иначе SSL-хендшейк падает.
 # Официальный gu-st.ru периодически меняет пути раздачи, поэтому
 # берём из отслеживаемого GitHub-зеркала (koenrh/russian-trusted-root-ca).
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl postgresql-client \
     && curl -fsSL -o /usr/local/share/ca-certificates/russian_trusted_root_ca.crt \
        https://raw.githubusercontent.com/koenrh/russian-trusted-root-ca/main/root-ca_rsa-2022.pem \
     && curl -fsSL -o /usr/local/share/ca-certificates/russian_trusted_sub_ca.crt \

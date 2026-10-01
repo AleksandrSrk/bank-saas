@@ -3,6 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app.db.database import SessionLocal
 from app.services.operation_sync_service import OperationSyncService
 from app.services.account_sync_service import AccountSyncService
+from app.services.drive_backup import backup_database
 
 scheduler = BackgroundScheduler()
 
@@ -40,5 +41,10 @@ def start_scheduler():
         coalesce=True,
         misfire_grace_time=30
     )
+
+    scheduler.add_job(
+        backup_database, "cron", day_of_week="mon,wed,fri", hour=3, minute=0
+    )
+    scheduler.add_job(backup_database, "date")  # разовый прогон сразу при старте
 
     scheduler.start()
