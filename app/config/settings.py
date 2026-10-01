@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     INTERNAL_API_KEY: str | None = None
 
+    # Google Drive — бэкап БД
+    GOOGLE_SERVICE_ACCOUNT_FILE: str | None = None
+    BACKUP_FILE_ID: str | None = None
+
     class Config:
         env_file = ".env"
 
