@@ -1,0 +1,22 @@
+# Секреты: в контейнеры приходят через env_file / volume, в образ не запекаем
+.env
+.env.*
+certs/
+*.pem
+*.key
+*.p12
+service_account.json
+
+# Дампы БД
+*.sql
+
+# Мусор и локальное окружение
+.git/
+.claude/
+venv/
+logs/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+Notes.md
+Описание проекта/

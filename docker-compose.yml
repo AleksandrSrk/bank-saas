@@ -22,6 +22,9 @@ services:
       - postgres
     env_file:
       - .env
+    environment:
+      # print() сразу в docker logs, без буферизации
+      PYTHONUNBUFFERED: "1"
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
@@ -39,5 +42,7 @@ services:
       - backend
     env_file:
       - .env
+    environment:
+      PYTHONUNBUFFERED: "1"
 volumes:
   postgres_data:
