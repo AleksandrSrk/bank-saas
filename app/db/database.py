@@ -17,7 +17,14 @@ class Base(DeclarativeBase):
     pass
 
 
-engine = create_engine(DATABASE_URL, echo=True)
+# echo=True писал в docker logs все параметры запросов, включая банковские токены.
+# hide_parameters=True — параметры не попадают и в тексты исключений SQLAlchemy.
+# Для отладки SQL: SQL_ECHO=1 в окружении (параметры всё равно скрыты).
+engine = create_engine(
+    DATABASE_URL,
+    echo=os.getenv("SQL_ECHO") == "1",
+    hide_parameters=True,
+)
 
 SessionLocal = sessionmaker(bind=engine)
 
