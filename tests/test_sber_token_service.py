@@ -107,6 +107,14 @@ def test_expiring_token_is_refreshed_and_pair_rotated(env):
     assert env.session.commits == 1
 
 
+def test_refresh_starts_well_before_expiry_to_leave_retries(env):
+    # 10 минут до смерти: при синке раз в 5 минут это ещё 2 попытки — значит, уже пора
+    env.conn.expires_at = NOW + timedelta(minutes=10)
+    env.responses.append(ok_token_response())
+    assert SberTokenService.get_access_token() == "NEW_ACCESS"
+    assert sts.REFRESH_MARGIN >= timedelta(minutes=15)
+
+
 def test_no_expires_at_forces_refresh(env):
     env.conn.expires_at = None  # так выглядит пара после sber_set_tokens
     env.responses.append(ok_token_response())

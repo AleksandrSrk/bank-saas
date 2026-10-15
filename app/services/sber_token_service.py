@@ -22,7 +22,9 @@ from app.models.bank_connection import BankConnection
 from app.services.alert_service import send_alert
 
 BANK_NAME = "sber"
-REFRESH_MARGIN = timedelta(minutes=5)
+# Синк ходит раз в 5 минут. Запас 15 минут = ~3 попытки refresh до смерти токена,
+# чтобы разовый сетевой глюк Сбера (ночью бывают таймауты/ресеты) не ронял синк и не будил алертом.
+REFRESH_MARGIN = timedelta(minutes=15)
 
 
 class SberAuthError(Exception):
